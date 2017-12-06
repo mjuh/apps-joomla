@@ -7,13 +7,14 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 import os
 import re
-import tarfile
+import shutil
 
 VERSION = "3.8.2"
+ARCHIVE_PATH = "/joomla-3.8.2.tgz"
 INSTALLER_URL = "http://{}/installation/index.php".format(os.environ["DOMAIN_NAME"])
-APP_LOCALE = os.environ.get("APP_LOCALE").replace("_", "-") or "ru-RU"
+APP_LOCALE = os.environ.get("APP_LOCALE") or "ru-RU"
 APP_LANG_NAME = {"ru-RU": "Russian",
-                 "en-US": "United States"}[APP_LOCALE]
+                 "en-US": "United States"}[APP_LOCALE.replace("_", "-")]
 APP_TITLE = os.environ["APP_TITLE"]
 ADMIN_EMAIL = os.environ["ADMIN_EMAIL"]
 ADMIN_USERNAME = os.environ["ADMIN_USERNAME"]
@@ -29,28 +30,14 @@ XPATHS = {"database_error":     '//*[@id="system-message-container"]/div[2]/div'
           "remove_inst_folder": '//*[@id="adminForm"]/div[3]/input'}
 
 
-def untar_joomla_dist(version, dir="/"):
-    with tarfile.open("{}/joomla-{}.tgz".format(dir, version)) as tar:
-        tar.extractall()
-
-
 def main():
     print("Unpacking Joomla {}".format(VERSION))
-    untar_joomla_dist(VERSION)
+    shutil.rmtree("installation", ignore_errors=True)
+    if os.path.exists("configuration.php"): os.unlink("configuration.php")
+    shutil.unpack_archive(ARCHIVE_PATH)
 
     d = webdriver.PhantomJS()
     d.get(INSTALLER_URL)
-
-#    print("Selecting language: {}".format(APP_LANG_NAME))
-#    WebDriverWait(d, 10).until(EC.element_to_be_clickable((By.XPATH, XPATHS["select_lang_button"])))
-#    d.find_element_by_xpath(XPATHS["select_lang_button"]).click()
-#
-#    WebDriverWait(d, 2).until(EC.visibility_of_element_located((By.XPATH, XPATHS["select_lang_list"])))
-#    # Iterate through <li> elements until APP_LANG_NAME is found in element's text,
-#    # then get element and call its click() method:
-#    next(e for e in d.find_elements_by_class_name("active-result") if APP_LANG_NAME in e.text).click()
-#    WebDriverWait(d, 5).until(EC.visibility_of_element_located((By.ID, "loading-logo")))
-#    WebDriverWait(d, 10).until(EC.invisibility_of_element_located((By.ID, "loading-logo")))
 
     print("Submitting 'Configufation' form")
     d.find_element_by_id("jform_site_name").send_keys(APP_TITLE)

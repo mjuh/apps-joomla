@@ -22,16 +22,9 @@ class ParagonIE_Sodium_Core32_Int32
      */
     public $overflow = 0;
 
-    /**
-     * ParagonIE_Sodium_Core32_Int32 constructor.
-     * @param array $array
-     */
     public function __construct($array = array(0, 0))
     {
-        $this->limbs = array(
-            (int) $array[0],
-            (int) $array[1]
-        );
+        $this->limbs = $array;
         $this->overflow = 0;
     }
 
@@ -109,8 +102,8 @@ class ParagonIE_Sodium_Core32_Int32
         $lo = ($m & 0xffff);
         return new ParagonIE_Sodium_Core32_Int32(
             array(
-                (int) ($this->limbs[0] & $hi),
-                (int) ($this->limbs[1] & $lo)
+                $this->limbs[0] & $hi,
+                $this->limbs[1] & $lo
             )
         );
     }
@@ -311,9 +304,6 @@ class ParagonIE_Sodium_Core32_Int32
         } elseif ($c < 0) {
             return $this->shiftLeft(-$c);
         } else {
-            if (is_null($c)) {
-                throw new TypeError();
-            }
             $carryRight = (int) ($this->limbs[0] & ((1 << ($c + 1)) - 1));
             $return->limbs[0] = (int) (($this->limbs[0] >> $c) & 0xffff);
             $return->limbs[1] = (int) ((($this->limbs[1] >> $c) | ($carryRight << (16 - $c))) & 0xffff);

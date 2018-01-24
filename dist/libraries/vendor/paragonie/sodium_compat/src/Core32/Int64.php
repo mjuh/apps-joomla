@@ -19,18 +19,9 @@ class ParagonIE_Sodium_Core32_Int64
      */
     public $overflow = 0;
 
-    /**
-     * ParagonIE_Sodium_Core32_Int64 constructor.
-     * @param array $array
-     */
     public function __construct($array = array(0, 0, 0, 0))
     {
-        $this->limbs = array(
-            (int) $array[0],
-            (int) $array[1],
-            (int) $array[2],
-            (int) $array[3]
-        );
+        $this->limbs = $array;
         $this->overflow = 0;
     }
 
@@ -290,7 +281,6 @@ class ParagonIE_Sodium_Core32_Int64
     /**
      * @param int $c
      * @return ParagonIE_Sodium_Core32_Int64
-     * @throws TypeError
      */
     public function shiftLeft($c = 0)
     {
@@ -319,9 +309,6 @@ class ParagonIE_Sodium_Core32_Int64
         } elseif ($c < 0) {
             return $this->shiftRight(-$c);
         } else {
-            if (is_null($c)) {
-                throw new TypeError();
-            }
             $carry = 0;
             for ($i = 3; $i >= 0; --$i) {
                 $tmp = ($this->limbs[$i] << $c) | ($carry & 0xffff);
@@ -335,7 +322,6 @@ class ParagonIE_Sodium_Core32_Int64
     /**
      * @param int $c
      * @return ParagonIE_Sodium_Core32_Int64
-     * @throws TypeError
      */
     public function shiftRight($c = 0)
     {
@@ -375,9 +361,6 @@ class ParagonIE_Sodium_Core32_Int64
         } elseif ($c < 0) {
             return $this->shiftLeft(-$c);
         } else {
-            if (is_null($c)) {
-                throw new TypeError();
-            }
             $carryRight = ($negative & 0xffff);
             $mask = (int) (((1 << ($c + 1)) - 1) & 0xffff);
             for ($i = 0; $i < 4; ++$i) {

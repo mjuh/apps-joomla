@@ -463,22 +463,17 @@ abstract class ParagonIE_Sodium_Core_Util
      *
      * @param int $a
      * @param int $b
-     * @param int $size Limits the number of operations (useful for small,
-     *                  constant operands)
      * @return int
      */
-    public static function mul($a, $b, $size = 0)
+    public static function mul($a, $b)
     {
         if (ParagonIE_Sodium_Compat::$fastMult) {
             return (int) ($a * $b);
         }
 
-        static $defaultSize = null;
-        if (!$defaultSize) {
-            $defaultSize = (PHP_INT_SIZE << 3) - 1;
-        }
-        if ($size < 1) {
-            $size = $defaultSize;
+        static $size = null;
+        if (!$size) {
+            $size = (PHP_INT_SIZE << 3) - 1;
         }
 
         $c = 0;

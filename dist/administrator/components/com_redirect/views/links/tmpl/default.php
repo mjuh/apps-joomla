@@ -31,19 +31,12 @@ $listDirn  = $this->escape($this->state->get('list.direction'));
 				array(
 					'url'        => $link,
 					'title'      => JText::_('COM_REDIRECT_EDIT_PLUGIN_SETTINGS'),
-					'height'      => '400px',
-					'width'       => '800px',
-					'bodyHeight'  => '70',
-					'modalWidth'  => '80',
-					'closeButton' => false,
-					'backdrop'    => 'static',
-					'keyboard'    => false,
+					'height'     => '400px',
+					'modalWidth' => '60',
 					'footer'     => '<button class="btn" data-dismiss="modal" aria-hidden="true">'
 						. JText::_("JLIB_HTML_BEHAVIOR_CLOSE") . '</button>'
-						. '<button class="btn btn-primary" data-dismiss="modal" aria-hidden="true" onclick="jQuery(\'#plugin' . $this->redirectPluginId . 'Modal iframe\').contents().find(\'#saveBtn\').click();">'
+						. '<button class="btn btn-success" data-dismiss="modal" aria-hidden="true" onclick="jQuery(\'#plugin' . $this->redirectPluginId . 'Modal iframe\').contents().find(\'#saveBtn\').click();">'
 						. JText::_("JSAVE") . '</button>'
-						. '<button class="btn btn-success" aria-hidden="true" onclick="jQuery(\'#plugin' . $this->redirectPluginId . 'Modal iframe\').contents().find(\'#applyBtn\').click(); return false;">'
-						. JText::_("JAPPLY") . '</button>'
 				)
 			); ?>
 		<?php endif; ?>
@@ -169,4 +162,3 @@ $listDirn  = $this->escape($this->state->get('list.direction'));
 		<?php echo JHtml::_('form.token'); ?>
 	</div>
 </form>
-

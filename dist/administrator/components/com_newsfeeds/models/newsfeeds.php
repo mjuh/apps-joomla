@@ -50,7 +50,6 @@ class NewsfeedsModelNewsfeeds extends JModelList
 			);
 
 			$assoc = JLanguageAssociations::isEnabled();
-
 			if ($assoc)
 			{
 				$config['filter_fields'][] = 'association';
@@ -264,7 +263,6 @@ class NewsfeedsModelNewsfeeds extends JModelList
 		{
 			ArrayHelper::toInteger($tagId);
 			$tagId = implode(',', $tagId);
-
 			if (!empty($tagId))
 			{
 				$hasTag = true;

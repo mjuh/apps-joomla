@@ -178,7 +178,7 @@
 		if (!self.params.time24) {
 			if (/pm/i.test(ampm.value) && hours < 12) {
 				hours = parseInt(hours) + 12;
-			} else if (/am/i.test(ampm.value) && hours == 12) {
+			} else if (/am/i.test(ampm.value) && hours === 12) {
 				hours = 0;
 			}
 		}
@@ -251,6 +251,7 @@
 
 	/** Method to close/hide the calendar */
 	JoomlaCalendar.prototype.close = function () {
+		document.activeElement.blur();
 		this.hide();
 	};
 
@@ -747,7 +748,7 @@
 				if (t12) {
 					var selAttr = true,
 						altDate = Date.parseFieldDate(self.inputField.getAttribute('data-alt-value'), self.params.dateFormat, 'gregorian');
-					pm = (altDate.getHours() >= 12);
+					pm = (altDate.getHours() > 12);
 
 					var part = createElement("select", cell);
 					part.className = "time-ampm";
@@ -962,14 +963,7 @@
 
 			/* remove the selected class  for the hours*/
 			this.resetSelected(hoursEl);
-			if (!this.params.time24) 
-			{ 
-				hoursEl.value = (hrs == "00") ? "12" : hrs; 
-			} 
-			else 
-			{ 
-				hoursEl.value = hrs; 
-			}
+			hoursEl.value = hrs;
 
 			/* remove the selected class  for the minutes*/
 			this.resetSelected(minsEl);

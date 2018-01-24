@@ -579,25 +579,32 @@ class FieldsModelField extends JModelAdmin
 		$needsInsert = false;
 		$needsUpdate = false;
 
-		$oldValue = $this->getFieldValue($fieldId, $itemId);
-		$value    = (array) $value;
-
-		if ($oldValue === null)
+		if ($field->default_value == $value)
 		{
-			// No records available, doing normal insert
-			$needsInsert = true;
-		}
-		elseif (count($value) == 1 && count((array) $oldValue) == 1)
-		{
-			// Only a single row value update can be done
-			$needsUpdate = true;
+			$needsDelete = true;
 		}
 		else
 		{
-			// Multiple values, we need to purge the data and do a new
-			// insert
-			$needsDelete = true;
-			$needsInsert = true;
+			$oldValue = $this->getFieldValue($fieldId, $itemId);
+			$value    = (array) $value;
+
+			if ($oldValue === null)
+			{
+				// No records available, doing normal insert
+				$needsInsert = true;
+			}
+			elseif (count($value) == 1 && count((array) $oldValue) == 1)
+			{
+				// Only a single row value update can be done
+				$needsUpdate = true;
+			}
+			else
+			{
+				// Multiple values, we need to purge the data and do a new
+				// insert
+				$needsDelete = true;
+				$needsInsert = true;
+			}
 		}
 
 		if ($needsDelete)

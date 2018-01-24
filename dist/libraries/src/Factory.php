@@ -134,7 +134,7 @@ abstract class Factory
 		{
 			if (!$id)
 			{
-				throw new \Exception('Failed to start application', 500);
+				throw new \Exception('Application Instantiation Error', 500);
 			}
 
 			self::$application = CMSApplication::getInstance($id);

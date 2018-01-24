@@ -68,47 +68,49 @@ class RedisStorage extends CacheStorage
 			return false;
 		}
 
-		$config = \JFactory::getConfig();
+		$app = \JFactory::getApplication();
 
-		$this->_persistent = $config->get('redis_persist', true);
+		$this->_persistent = $app->get('redis_persist', true);
 
 		$server = array(
-			'host' => $config->get('redis_server_host', 'localhost'),
-			'port' => $config->get('redis_server_port', 6379),
-			'auth' => $config->get('redis_server_auth', null),
-			'db'   => (int) $config->get('redis_server_db', null),
+			'host' => $app->get('redis_server_host', 'localhost'),
+			'port' => $app->get('redis_server_port', 6379),
+			'auth' => $app->get('redis_server_auth', null),
+			'db'   => (int) $app->get('redis_server_db', null),
 		);
-
-		// If you are trying to connect to a socket file, ignore the supplied port
-		if ($server['host'][0] === '/')
-		{
-			$server['port'] = 0;
-		}
 
 		static::$_redis = new \Redis;
 
-		try
+		if ($this->_persistent)
 		{
-			if ($this->_persistent)
+			try
 			{
 				$connection = static::$_redis->pconnect($server['host'], $server['port']);
+				$auth       = (!empty($server['auth'])) ? static::$_redis->auth($server['auth']) : true;
 			}
-			else
+			catch (\RedisException $e)
 			{
-				$connection = static::$_redis->connect($server['host'], $server['port']);
+				Log::add($e->getMessage(), Log::DEBUG);
 			}
 		}
-		catch (\RedisException $e)
+		else
 		{
-			Log::add($e->getMessage(), Log::DEBUG);
+			try
+			{
+				$connection = static::$_redis->connect($server['host'], $server['port']);
+				$auth       = (!empty($server['auth'])) ? static::$_redis->auth($server['auth']) : true;
+			}
+			catch (\RedisException $e)
+			{
+				Log::add($e->getMessage(), Log::DEBUG);
+			}
 		}
 
 		if ($connection == false)
 		{
 			static::$_redis = null;
 
-			// Because the application instance may not be available on cli script, use it only if needed
-			if (\JFactory::getApplication()->isClient('administrator'))
+			if ($app->isClient('administrator'))
 			{
 				\JError::raiseWarning(500, 'Redis connection failed');
 			}
@@ -116,22 +118,9 @@ class RedisStorage extends CacheStorage
 			return false;
 		}
 
-		try
+		if ($auth == false)
 		{
-			$auth = $server['auth'] ? static::$_redis->auth($server['auth']) : true;
-		}
-		catch (\RedisException $e)
-		{
-			$auth = false;
-			Log::add($e->getMessage(), Log::DEBUG);
-		}
-
-		if ($auth === false)
-		{
-			static::$_redis = null;
-
-			// Because the application instance may not be available on cli script, use it only if needed
-			if (\JFactory::getApplication()->isClient('administrator'))
+			if ($app->isClient('administrator'))
 			{
 				\JError::raiseWarning(500, 'Redis authentication failed');
 			}
@@ -145,8 +134,7 @@ class RedisStorage extends CacheStorage
 		{
 			static::$_redis = null;
 
-			// Because the application instance may not be available on cli script, use it only if needed
-			if (\JFactory::getApplication()->isClient('administrator'))
+			if ($app->isClient('administrator'))
 			{
 				\JError::raiseWarning(500, 'Redis failed to select database');
 			}
@@ -162,8 +150,7 @@ class RedisStorage extends CacheStorage
 		{
 			static::$_redis = null;
 
-			// Because the application instance may not be available on cli script, use it only if needed
-			if (\JFactory::getApplication()->isClient('administrator'))
+			if ($app->isClient('administrator'))
 			{
 				\JError::raiseWarning(500, 'Redis ping failed');
 			}

@@ -617,6 +617,7 @@ class ModulesModelModule extends JModelAdmin
 			// Avoid to delete params of a second module opened in a new browser tab while new one is not saved yet.
 			if (empty($data->params))
 			{
+
 				// This allows us to inject parameter settings into a new module.
 				$params = $app->getUserState('com_modules.add.module.params');
 

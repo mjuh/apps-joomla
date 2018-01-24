@@ -143,25 +143,22 @@ class ContactRouter extends JComponentRouterView
 	{
 		if (isset($query['id']))
 		{
-			$category = JCategories::getInstance($this->getName(), array('access' => false))->get($query['id']);
+			$category = JCategories::getInstance($this->getName())->get($query['id']);
 
-			if ($category)
+			foreach ($category->getChildren() as $child)
 			{
-				foreach ($category->getChildren() as $child)
+				if ($this->noIDs)
 				{
-					if ($this->noIDs)
+					if ($child->alias == $segment)
 					{
-						if ($child->alias == $segment)
-						{
-							return $child->id;
-						}
+						return $child->id;
 					}
-					else
+				}
+				else
+				{
+					if ($child->id == (int) $segment)
 					{
-						if ($child->id == (int) $segment)
-						{
-							return $child->id;
-						}
+						return $child->id;
 					}
 				}
 			}

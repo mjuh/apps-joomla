@@ -15,7 +15,8 @@ ARCHIVE_PATH = "/joomla-3.8.2.tgz"
 INSTALLER_URL = "http://{}/installation/index.php".format(os.environ["DOMAIN_NAME"])
 APP_LOCALE = os.environ.get("APP_LOCALE") or "ru-RU"
 APP_LANG_NAME = {"ru-RU": "Russian",
-                 "en-US": "United States"}[APP_LOCALE.replace("_", "-")]
+                 "en-US": "United States",
+                 "null": "Russian"}[APP_LOCALE.replace("_", "-")]
 APP_TITLE = os.environ["APP_TITLE"]
 ADMIN_EMAIL = os.environ["ADMIN_EMAIL"]
 ADMIN_USERNAME = os.environ["ADMIN_USERNAME"]

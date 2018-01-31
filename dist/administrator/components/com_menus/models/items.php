@@ -3,7 +3,7 @@
  * @package     Joomla.Administrator
  * @subpackage  com_menus
  *
- * @copyright   Copyright (C) 2005 - 2017 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2018 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -466,10 +466,10 @@ class MenusModelItems extends JModelList
 	/**
 	 * Get the client id for a menu
 	 *
-	 * @param   string  $menuType  The menutype identifier for the menu
-	 * @param   bool    $check     Flag whether to perform check against ACL as well as existence
+	 * @param   string   $menuType  The menutype identifier for the menu
+	 * @param   boolean  $check     Flag whether to perform check against ACL as well as existence
 	 *
-	 * @return  int
+	 * @return  integer
 	 *
 	 * @since   3.7.0
 	 */

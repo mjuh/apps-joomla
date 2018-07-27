@@ -80,7 +80,7 @@ def main():
         d.find_element_by_id("jform_db_pass").send_keys(DB_PASSWORD)
         d.find_element_by_xpath(XPATHS["next_button"]).click()
         print("Finishing installation")
-        WebDriverWait(d, 10).until(EC.visibility_of_element_located((By.ID, "loading-logo")))
+        WebDriverWait(d, 10).until(EC.visibility_of_element_located((By.ID, "jform_sample_file")))
         d.find_element_by_xpath(XPATHS["install_button"]).click()
 
         print("Installing language pack by name: {}".format(APP_LANG_NAME))

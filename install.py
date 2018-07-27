@@ -73,10 +73,10 @@ def main():
         assert file_to_delete, "Failed to extract file name from message: {}".format(database_error_text)
         print("Deleting {} file from installation dir".format(file_to_delete))
         os.unlink("installation/{}".format(file_to_delete))
-
         WebDriverWait(d, 10).until(EC.invisibility_of_element_located((By.ID, "loading-logo")))
         d.find_element_by_xpath(XPATHS["next_button"]).click()
-
+        d.find_element_by_id("jform_db_pass").send_keys(DB_PASSWORD)
+        d.find_element_by_xpath(XPATHS["next_button"]).click()
         print("Finishing installation")
         WebDriverWait(d, 10).until(EC.visibility_of_element_located((By.ID, "jform_sample_file")))
         d.find_element_by_xpath(XPATHS["install_button"]).click()

@@ -10,7 +10,7 @@ import os
 import re
 import shutil
 
-VERSION = "3.8.10"
+VERSION = "3.8.11"
 ARCHIVE_PATH = "/joomla-{}.tgz".format(VERSION)
 INSTALLER_URL = "http://{}/installation/index.php".format(os.environ["DOMAIN_NAME"])
 APP_LOCALE = os.environ.get("APP_LOCALE") or "ru-RU"

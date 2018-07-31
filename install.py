@@ -76,7 +76,6 @@ def main():
         WebDriverWait(d, 10).until(EC.invisibility_of_element_located((By.ID, "loading-logo")))
         d.find_element_by_xpath(XPATHS["next_button"]).click()
         print("Try to set jform_db_pass again! ")
-        XPATHS["next_button"] = '//*[@id="adminForm"]/div/div/a[2]'
         WebDriverWait(d, 10).until(EC.element_to_be_clickable((By.ID, "jform_db_pass")))
         d.find_element_by_id("jform_db_pass").send_keys(DB_PASSWORD)
         d.find_element_by_xpath(XPATHS["next_button"]).click()

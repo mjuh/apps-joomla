@@ -9,6 +9,7 @@ import base64
 import os
 import re
 import shutil
+import time
 
 VERSION = "3.8.11"
 ARCHIVE_PATH = "/joomla-{}.tgz".format(VERSION)
@@ -53,7 +54,7 @@ def main():
         XPATHS["next_button"] = '//*[@id="adminForm"]/div[9]/div/div/a[2]'
 
         print("Submitting 'Database' form")
-        WebDriverWait(d, 10).until(EC.element_to_be_clickable((By.ID, "jform_db_name")))
+        WebDriverWait(d, 60).until(EC.element_to_be_clickable((By.ID, "jform_db_name")))
         db_host_field = d.find_element_by_id("jform_db_host")
         db_host_field.clear()   # Joomla installer sets 'localhost' here by default
         db_host_field.send_keys(DB_HOST)
@@ -66,31 +67,32 @@ def main():
         # displays error message with file name like "_JoomlaheyDj35lRLgCAjsZmWoD0.txt"
         # we need to delete this file from installation/ directory to proceed
         print("Confirming website ownership")
-        WebDriverWait(d, 10).until(EC.presence_of_element_located((By.XPATH, XPATHS["database_error"])))
+        WebDriverWait(d, 60).until(EC.presence_of_element_located((By.XPATH, XPATHS["database_error"])))
         database_error_text = d.find_element_by_xpath(XPATHS["database_error"]).text
         file_to_delete = re.match(".+(?P<filename>_[A-z0-9]+\.txt).+",
                                 database_error_text).groupdict().get("filename")
         assert file_to_delete, "Failed to extract file name from message: {}".format(database_error_text)
         print("Deleting {} file from installation dir".format(file_to_delete))
         os.unlink("installation/{}".format(file_to_delete))
-        WebDriverWait(d, 10).until(EC.invisibility_of_element_located((By.ID, "loading-logo")))
+        WebDriverWait(d, 60).until(EC.invisibility_of_element_located((By.ID, "loading-logo")))
         d.find_element_by_xpath(XPATHS["next_button"]).click()
         print("Try to set jform_db_pass again! ")
+        time.sleep(1)
         WebDriverWait(d, 5).until(EC.element_to_be_clickable((By.ID, "jform_db_pass")))
         d.find_element_by_id("jform_db_pass").click()
         d.find_element_by_id("jform_db_pass").send_keys(DB_PASSWORD)
-        d.find_element_by_xpath(XPATHS["next_button"]).click() 
+        d.find_element_by_xpath(XPATHS["next_button"]).click()
         print("Finishing installation")
-        WebDriverWait(d, 10).until(EC.visibility_of_element_located((By.ID, "jform_sample_file")))
+        WebDriverWait(d, 60).until(EC.visibility_of_element_located((By.ID, "jform_sample_file")))
         d.find_element_by_xpath(XPATHS["install_button"]).click()
 
         print("Installing language pack by name: {}".format(APP_LANG_NAME))
-        WebDriverWait(d, 10).until(EC.element_to_be_clickable((By.ID, "instLangs")))
+        WebDriverWait(d, 120).until(EC.element_to_be_clickable((By.ID, "instLangs")))
         d.find_element_by_id("instLangs").click()
 
         XPATHS["next_button"] = '//*[@id="adminForm"]/div[3]/div/div/a[2]'
 
-        WebDriverWait(d, 10).until(EC.visibility_of_element_located((By.ID, "defaultlanguage")))
+        WebDriverWait(d, 60).until(EC.visibility_of_element_located((By.ID, "defaultlanguage")))
         checkbox_id = next((e.get_attribute("for") for e in d.find_elements_by_tag_name("label")
                             if APP_LANG_NAME in e.text))
         d.find_element_by_id(checkbox_id).click()
@@ -99,13 +101,13 @@ def main():
         XPATHS["next_button"] = '//*[@id="adminForm"]/div[4]/div/div/a[2]'
 
         print("Selecting default locale: {}".format(APP_LOCALE))
-        WebDriverWait(d, 10).until(EC.visibility_of_element_located((By.ID, "multilanguageOptions")))
+        WebDriverWait(d, 60).until(EC.visibility_of_element_located((By.ID, "multilanguageOptions")))
         for each in d.find_elements_by_tag_name("input"):
             if each.get_attribute("value") == APP_LOCALE: each.click()
         d.find_element_by_xpath(XPATHS["next_button"]).click()
 
         print("Removing installation dir")
-        WebDriverWait(d, 10).until(EC.element_to_be_clickable((By.XPATH, XPATHS["remove_inst_folder"])))
+        WebDriverWait(d, 60).until(EC.element_to_be_clickable((By.XPATH, XPATHS["remove_inst_folder"])))
         d.find_element_by_xpath(XPATHS["remove_inst_folder"]).click()
 
         d.quit()

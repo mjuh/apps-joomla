@@ -16,7 +16,7 @@ RUN echo '@edge http://nl.alpinelinux.org/alpine/edge/main'>> /etc/apk/repositor
  rm -rf $PHANTOMJS_ARCHIVE /tmp/* && \
  pip3 install selenium
 COPY dist /dist
-RUN tar czf joomla-3.9.4.tgz -C /dist . && chmod o+r joomla-3.9.4.tgz
+RUN tar czf joomla-3.9.8.tgz -C /dist . && chmod o+r joomla-3.9.8.tgz
 
 COPY install.py /install
 WORKDIR /workdir

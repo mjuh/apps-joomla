@@ -1,34 +1,65 @@
-@Library('mj-shared-library') _
-    pipeline {
-        agent { label 'master' }
-        environment {
-            PROJECT_NAME = gitRemoteOrigin.getProject()
-            GROUP_NAME = gitRemoteOrigin.getGroup()
-        }
-        stages {
-            stage('Build Docker image') {
-                steps {
-                    gitlabCommitStatus(STAGE_NAME) {
-                        script { dockerImage = buildDocker namespace: GROUP_NAME, name: PROJECT_NAME, tag: BRANCH_NAME }
+def slackMessages = []
+def dockerImage = [:]
+
+pipeline {
+    agent { label 'nixbld' }
+    options {
+        gitLabConnection(library('mj-shared-library').Constants.gitLabConnection)
+        gitlabBuilds(builds: ['Build Docker image', 'Push Docker image'])
+        buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '10'))
+    }
+    environment {
+        PROJECT_NAME = gitRemoteOrigin.getProject()
+        GROUP_NAME = gitRemoteOrigin.getGroup()
+    }
+    stages {
+        stage('Build and push') {
+            matrix {
+                axes {
+                    axis {
+                        name "joomla_version"
+			// 4.7 версия нужна для тестов
+                        values "3-9"
+                    }
+                }
+                stages {
+                    stage('Build Docker image') {
+                        steps {
+                            gitlabCommitStatus(STAGE_NAME) {
+                                script {
+                                    dockerImage[joomla_version] = nixBuildDocker (
+                                        namespace: GROUP_NAME,
+                                        name: PROJECT_NAME,
+                                        currentProjectBranch: GIT_BRANCH,
+                                        overlaybranch: "master",
+                                        nixArgs: ["-A joomla-${joomla_version.replaceAll('\\.','-')}"]
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    stage('Push Docker image') {
+                        steps {
+                            gitlabCommitStatus(STAGE_NAME) {
+                                script {
+                                    pushDocker (
+                                        image: dockerImage[joomla_version],
+                                        tag: "${GIT_BRANCH}_${joomla_version}"
+                                    )
+                                    slackMessages += "docker-registry.intr/${GROUP_NAME}/${PROJECT_NAME}:${GIT_BRANCH}_${joomla_version} pushed to registry"
+                                }
+                            }
+                        }
                     }
                 }
             }
-            stage('Push Docker image') {
-                when { not { expression { return params.skipToDeploy } } }
-                steps {
-                    gitlabCommitStatus(STAGE_NAME) {
-                        pushDocker image: dockerImage
-                    }
-                }
-                post {
-                    success {
-                        notifySlack "${GROUP_NAME}/${PROJECT_NAME}:${BRANCH_NAME} pushed to registry"
-                    }
+            post {
+                success { cleanWs() }
+                always {
+                    sendSlackNotifications (buildStatus: currentBuild.result,
+                                            threadMessages: slackMessages)
                 }
             }
         }
-        post {
-            success { cleanWs() }
-            failure { notifySlack "Build failled: ${JOB_NAME} [<${RUN_DISPLAY_URL}|${BUILD_NUMBER}>]", "red" }
-        }
+    }
 }

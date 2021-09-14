@@ -28,9 +28,31 @@
     };
 
     packages.${system} = {
+      joomla-3-9 = import ./container.nix {
+        inherit nixpkgs system;
+        joomla_version = "3.9.28";
+      };
+
+      joomla-3-10 = import ./container.nix {
+        inherit nixpkgs system;
+        joomla_version = "3.10.1";
+      };
+
       joomla-4-0 = import ./container.nix {
         inherit nixpkgs system;
         joomla_version = "4.0.3";
+      };
+
+      deploy-3-9 = majordomo.outputs.deploy {
+        tag = "apps/joomla";
+        pkg_name = "joomla-3-9";
+        postfix = "_3_9";
+      };
+
+      deploy-3-10 = majordomo.outputs.deploy {
+        tag = "apps/joomla";
+        pkg_name = "joomla-3-10";
+        postfix = "_3_10";
       };
 
       deploy-4-0 = majordomo.outputs.deploy {

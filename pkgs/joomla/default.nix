@@ -2,7 +2,8 @@
 
 let
   versionHashMap = {
-    "3.9.26" = "15qcpd4al4xjmbadd86f01d3n6qm4ra1vsay7pyjzzjwch8ixb4b";
+    "3.9.28" = "sha256-ZXDBIk0Z1y6wx5kPDLnhJ6k7iWx8h9GIS1pHLlYZPAQ=";
+    "3.10.1" = "sha256-RGdWyOsB9EIMZxdcfto8zZi/pl7qFuXDYJsgQW01CWc=";
     "4.0.3" = "sha256-/4H4URHNtasyBf98uodVpKtc7+1MS7aYj6WnnSOkI6o=";
   };
   version = joomla_version;

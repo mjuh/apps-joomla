@@ -3,7 +3,6 @@
 with import nixpkgs { inherit system; };
 let
   joomla = callPackage ./pkgs/joomla { inherit joomla_version; };
-  joomla_lang = callPackage ./pkgs/joomla-lang-pack { inherit joomla_version; };
   joomla_console = callPackage ./pkgs/joomla-console { };
 
   installCommand = builtins.concatStringsSep " " [
@@ -47,9 +46,6 @@ let
       mysql -h$DB_HOST -u$DB_USER -p$DB_PASSWORD $DB_NAME -e "DELETE FROM j_users WHERE username != \"admin\";" 
       mysql -h$DB_HOST -u$DB_USER -p$DB_PASSWORD $DB_NAME -e "UPDATE j_users SET username = \"$ADMIN_USERNAME\", password = MD5(\"$ADMIN_PASSWORD\"), email = \"$ADMIN_EMAIL\" WHERE username = \"admin\";" 
 
-      ${joomla_console}/bin/joomla --www=/ site:list
-      ${joomla_console}/bin/joomla --www=/ extension:installfile workdir ${joomla_lang}
-
       mv htaccess.txt .htaccess
       EOF
 
@@ -61,7 +57,7 @@ in pkgs.dockerTools.buildLayeredImage rec {
   name = "docker-registry.intr/apps/joomla";
   tag = "${joomla_version}_latest";
 
-  contents = [ bashInteractive coreutils gnutar gzip entrypoint mariadb.client unzip ];
+  contents = [ bashInteractive coreutils gnutar gzip entrypoint mariadb.client ];
   config = {
     Entrypoint = "${entrypoint}/bin/joomla-install.sh";
     Env = [

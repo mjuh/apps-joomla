@@ -1,8 +1,6 @@
-{ nixpkgs,
-  joomla_version
-}:
+{ nixpkgs, joomla_version, system }:
 
-with import nixpkgs { };
+with import nixpkgs { inherit system; };
 let
   joomla = callPackage ./pkgs/joomla { inherit joomla_version; };
   joomla_console = callPackage ./pkgs/joomla-console { };
@@ -57,7 +55,7 @@ let
 
 in pkgs.dockerTools.buildLayeredImage rec {
   name = "docker-registry.intr/apps/joomla";
-  tag = "latest";
+  tag = "${joomla_version}_latest";
 
   contents = [ bashInteractive coreutils gnutar gzip entrypoint mariadb.client ];
   config = {
@@ -91,4 +89,5 @@ in pkgs.dockerTools.buildLayeredImage rec {
     hosts: files dns
     EOF
   '';
+
 }

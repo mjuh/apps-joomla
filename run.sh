@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
-nix build .#joomla-4-0
+nix build .#joomla-4-0 -L
 docker load < result
 
 docker run --rm --name joomla-installer \
+	--env 'DOCUMENT_ROOT'='/home/u12799/joomla.mj.rezvov.ru/www' \
 	--env 'ADMIN_USERNAME'='u213147' \
 	--env 'DB_HOST'='78.108.80.76' \
 	--env 'DB_USER'='u213147_joomla' \

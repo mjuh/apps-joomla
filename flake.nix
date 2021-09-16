@@ -14,10 +14,7 @@
     system = "x86_64-linux";
   in {
     devShell.${system} = with nixpkgs-unstable.legacyPackages.${system}; mkShell {
-      buildInputs = [
-        nixUnstable
-        nixos-rebuild
-      ];
+      buildInputs = [ nixUnstable ];
       shellHook = ''
         # Fix ssh completion
         # bash: warning: setlocale: LC_CTYPE: cannot change locale (en_US.UTF-8)

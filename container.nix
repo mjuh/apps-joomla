@@ -13,7 +13,7 @@ let
       cat > $out/bin/${name}.sh <<'EOF'
       #!${bash}/bin/bash
       set -ex
-      export PATH=${gnutar}/bin:${coreutils}/bin:${gzip}/bin:${mariadb.client}/bin:${gnused}/bin:${envsubst}/bin:${openssl}/bin
+      export PATH=${gnutar}/bin:${coreutils}/bin:${gzip}/bin:${mariadb.client}/bin:${gnused}/bin:${gettext}/bin:${openssl}/bin
       
       export MYSQL_PWD=$DB_PASSWORD
       export TABLE_PREFIX=$(echo $ADMIN_PASSWORD | sha256sum | head --bytes=3 )
@@ -32,10 +32,11 @@ let
       mysql -h$DB_HOST -u$DB_USER -p$DB_PASSWORD $DB_NAME < installation/sql/mysql/supports.sql
 
       echo "Create user"
-      envsubst -i ${./sql/USER_CREATE.sql} | mysql -h$DB_HOST -u$DB_USER -p$DB_PASSWORD $DB_NAME
+      envsubst < ${./sql/USER_CREATE.sql} | mysql -h$DB_HOST -u$DB_USER -p$DB_PASSWORD $DB_NAME
 
       echo "Install config"
-      envsubst -i ${./configs/configuration.php} > configuration.php
+      envsubst '$DOCUMENT_ROOT $APP_TITLE $DB_HOST $DB_USER $DB_PASSWORD $DB_NAME $APP_TITLE $TABLE_PREFIX $ADMIN_EMAIL' \
+        < ${./configs/configuration.php} > configuration.php
 
       mv htaccess.txt .htaccess
       rm -rf installation

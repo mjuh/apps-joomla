@@ -2,18 +2,13 @@
 /**
  * Part of the Joomla Framework Filesystem Package
  *
- * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2021 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
 namespace Joomla\Filesystem;
 
 use Joomla\Filesystem\Exception\FilesystemException;
-
-if (!\defined('JPATH_ROOT'))
-{
-	throw new \LogicException('The "JPATH_ROOT" constant must be defined for your application.');
-}
 
 /**
  * A Path handling class
@@ -165,14 +160,15 @@ class Path
 	/**
 	 * Checks for snooping outside of the file system root.
 	 *
-	 * @param   string  $path  A file system path to check.
+	 * @param   string  $path      A file system path to check.
+	 * @param   string  $basePath  The base path of the system
 	 *
 	 * @return  string  A cleaned version of the path or exit on error.
 	 *
 	 * @since   1.0
 	 * @throws  FilesystemException
 	 */
-	public static function check($path)
+	public static function check($path, $basePath = '')
 	{
 		if (strpos($path, '..') !== false)
 		{
@@ -187,7 +183,8 @@ class Path
 
 		$path = static::clean($path);
 
-		if ((JPATH_ROOT != '') && strpos($path, static::clean(JPATH_ROOT)) !== 0)
+		// If a base path is defined then check the cleaned path is not outside of root
+		if (($basePath != '') && strpos($path, static::clean($basePath)) !== 0)
 		{
 			throw new FilesystemException(
 				sprintf(
@@ -213,11 +210,11 @@ class Path
 	 * @since   1.0
 	 * @throws  \UnexpectedValueException If $path is not a string.
 	 */
-	public static function clean($path, $ds = DIRECTORY_SEPARATOR)
+	public static function clean($path, $ds = \DIRECTORY_SEPARATOR)
 	{
 		if (!\is_string($path))
 		{
-			throw new \UnexpectedValueException('JPath::clean $path is not a string.');
+			throw new \InvalidArgumentException('You must specify a non-empty path to clean');
 		}
 
 		$stream = explode('://', $path, 2);
@@ -232,14 +229,10 @@ class Path
 
 		$path = trim($path);
 
-		if (empty($path))
+		// Remove double slashes and backslashes and convert all slashes and backslashes to DIRECTORY_SEPARATOR
+		// If dealing with a UNC path don't forget to prepend the path with a backslash.
+		if (($ds == '\\') && ($path[0] == '\\') && ($path[1] == '\\'))
 		{
-			$path = JPATH_ROOT;
-		}
-		elseif (($ds == '\\') && ($path[0] == '\\') && ($path[1] == '\\'))
-		{
-			// Remove double slashes and backslashes and convert all slashes and backslashes to DIRECTORY_SEPARATOR
-			// If dealing with a UNC path don't forget to prepend the path with a backslash.
 			$path = '\\' . preg_replace('#[/\\\\]+#', $ds, $path);
 		}
 		else
@@ -263,12 +256,11 @@ class Path
 	{
 		$tmp = md5(random_bytes(16));
 		$ssp = ini_get('session.save_path');
-		$jtp = JPATH_ROOT;
 
 		// Try to find a writable directory
 		$dir = is_writable('/tmp') ? '/tmp' : false;
-		$dir = (!$dir && is_writable($ssp)) ? $ssp : $dir;
-		$dir = (!$dir && is_writable($jtp)) ? $jtp : $dir;
+		$dir = !$dir && is_writable('.') ? '.' : $dir;
+		$dir = !$dir && is_writable($ssp) ? $ssp : $dir;
 
 		if ($dir)
 		{
@@ -279,7 +271,7 @@ class Path
 			File::write($test, $blank, false);
 
 			// Test ownership
-			$return = (fileowner($test) == fileowner($path));
+			$return = fileowner($test) === fileowner($path);
 
 			// Delete the test file
 			File::delete($test);
@@ -339,5 +331,50 @@ class Path
 
 		// Could not find the file in the set of paths
 		return false;
+	}
+
+	/**
+	 * Resolves /./, /../ and multiple / in a string and returns the resulting absolute path, inspired by Flysystem
+	 * Removes trailing slashes
+	 *
+	 * @param   string   $path   A path to resolve
+	 *
+	 * @return  string  The resolved path
+	 *
+	 * @since   1.6.0
+	 */
+	public static function resolve($path)
+	{
+		$path = static::clean($path);
+
+		// Save start character for absolute path
+		$startCharacter = ($path[0] === DIRECTORY_SEPARATOR) ? DIRECTORY_SEPARATOR : '';
+
+		$parts = array();
+
+		foreach (explode(DIRECTORY_SEPARATOR, $path) as $part)
+		{
+			switch ($part)
+			{
+				case '':
+				case '.':
+					break;
+
+				case '..':
+					if (empty($parts))
+					{
+						throw new FilesystemException('Path is outside of the defined root');
+					}
+
+					array_pop($parts);
+					break;
+
+				default:
+					$parts[] = $part;
+					break;
+			}
+		}
+
+		return $startCharacter . implode(DIRECTORY_SEPARATOR, $parts);
 	}
 }

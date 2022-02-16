@@ -2,7 +2,7 @@
 /**
  * Part of the Joomla Framework Filesystem Package
  *
- * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
+ * @copyright  Copyright (C) 2005 - 2021 Open Source Matters, Inc. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE
  */
 
@@ -13,8 +13,7 @@ use Joomla\Filesystem\Support\StringController;
 /**
  * String Stream Wrapper
  *
- * This class allows you to use a PHP string in the same way that
- * you would normally use a regular stream wrapper
+ * This class allows you to use a PHP string in the same way that you would normally use a regular stream wrapper
  *
  * @since  1.3.0
  */
@@ -144,7 +143,7 @@ class StringWrapper
 		$now     = time();
 		$refPath = StringController::getRef(str_replace('string://', '', $path));
 		$string  = &$refPath;
-		$stat    = array(
+		$stat    = [
 			'dev'     => 0,
 			'ino'     => 0,
 			'mode'    => 0,
@@ -158,7 +157,7 @@ class StringWrapper
 			'ctime'   => $now,
 			'blksize' => '512',
 			'blocks'  => ceil(\strlen($string) / 512),
-		);
+		];
 
 		return $stat;
 	}
@@ -249,12 +248,12 @@ class StringWrapper
 
 		switch ($whence)
 		{
-			case SEEK_SET:
+			case \SEEK_SET:
 				$this->pos = $offset;
 
 				break;
 
-			case SEEK_CUR:
+			case \SEEK_CUR:
 				if (($this->pos + $offset) > $this->len)
 				{
 					return false;
@@ -264,7 +263,7 @@ class StringWrapper
 
 				break;
 
-			case SEEK_END:
+			case \SEEK_END:
 				$this->pos = $this->len - $offset;
 
 				break;

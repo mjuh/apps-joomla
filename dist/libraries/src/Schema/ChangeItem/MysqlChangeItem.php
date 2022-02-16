@@ -2,13 +2,13 @@
 /**
  * Joomla! Content Management System
  *
- * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
+ * @copyright  (C) 2011 Open Source Matters, Inc. <https://www.joomla.org>
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 namespace Joomla\CMS\Schema\ChangeItem;
 
-defined('JPATH_PLATFORM') or die;
+\defined('JPATH_PLATFORM') or die;
 
 use Joomla\CMS\Schema\ChangeItem;
 
@@ -39,7 +39,9 @@ class MysqlChangeItem extends ChangeItem
 	protected function buildCheckQuery()
 	{
 		// Initialize fields in case we can't create a check query
-		$this->checkStatus = -1; // change status to skipped
+
+		// Change status to skipped
+		$this->checkStatus = -1;
 		$result = null;
 
 		// Remove any newlines
@@ -51,26 +53,33 @@ class MysqlChangeItem extends ChangeItem
 		$updateQuery = preg_replace($find, $replace, $this->updateQuery);
 		$wordArray = preg_split("~'[^']*'(*SKIP)(*F)|\s+~u", trim($updateQuery, "; \t\n\r\0\x0B"));
 
-		// First, make sure we have an array of at least 6 elements
+		// First, make sure we have an array of at least 5 elements
 		// if not, we can't make a check query for this one
-		if (count($wordArray) < 6)
+		if (\count($wordArray) < 5)
 		{
 			// Done with method
 			return;
 		}
 
-		// We can only make check queries for alter table and create table queries
+		// We can only make check queries for rename table, alter table and create table queries
 		$command = strtoupper($wordArray[0] . ' ' . $wordArray[1]);
 
-		// Check for special update statement to reset utf8mb4 conversion status
-		if (($command === 'UPDATE `#__UTF8_CONVERSION`'
-			|| $command === 'UPDATE #__UTF8_CONVERSION')
-			&& strtoupper($wordArray[2]) === 'SET'
-			&& strtolower(substr(str_replace('`', '', $wordArray[3]), 0, 9)) === 'converted')
+		if ($command === 'RENAME TABLE')
 		{
-			// Statement is special statement to reset conversion status
-			$this->queryType = 'UTF8CNV';
+			$table = $this->fixQuote($wordArray[4]);
 
+			$this->checkQuery  = 'SHOW TABLES LIKE ' . $table;
+			$this->queryType   = 'RENAME_TABLE';
+			$this->msgElements = array($table);
+			$this->checkStatus = 0;
+
+			// Done with method
+			return;
+		}
+
+		// For the remaining query types make sure we have an array of at least 6 elements
+		if (\count($wordArray) < 6)
+		{
 			// Done with method
 			return;
 		}
@@ -154,7 +163,7 @@ class MysqlChangeItem extends ChangeItem
 				}
 
 				// Detect changes in NULL and in DEFAULT column attributes
-				$changesArray = array_slice($wordArray, 6);
+				$changesArray = \array_slice($wordArray, 6);
 				$defaultCheck = $this->checkDefault($changesArray, $type);
 				$nullCheck = $this->checkNull($changesArray);
 
@@ -180,9 +189,9 @@ class MysqlChangeItem extends ChangeItem
 				{
 					$type = $this->fixInteger($wordArray[6], $wordArray[7]);
 				}
-				
+
 				// Detect changes in NULL and in DEFAULT column attributes
-				$changesArray = array_slice($wordArray, 6);
+				$changesArray = \array_slice($wordArray, 6);
 				$defaultCheck = $this->checkDefault($changesArray, $type);
 				$nullCheck = $this->checkNull($changesArray);
 
@@ -232,8 +241,11 @@ class MysqlChangeItem extends ChangeItem
 
 	/**
 	 * Fix up integer. Fixes problem with MySQL integer descriptions.
-	 * If you change a column to "integer unsigned" it shows
-	 * as "int(10) unsigned" in the check query.
+	 * On MySQL 8 display length is not shown anymore.
+	 * This means we have to match e.g. both "int(10) unsigned" and
+	 * "int unsigned", or both "int(11)" and "int" and so on.
+	 * The same applies to the other integer data types "tinyint",
+	 * "smallint", "mediumint" and "bigint".
 	 *
 	 * @param   string  $type1  the column type
 	 * @param   string  $type2  the column attributes
@@ -246,13 +258,14 @@ class MysqlChangeItem extends ChangeItem
 	{
 		$result = $type1;
 
-		if (strtolower($type1) === 'integer' && strtolower(substr($type2, 0, 8)) === 'unsigned')
+		if (preg_match('/^(?P<type>(big|medium|small|tiny)?int)(\([0-9]+\))?$/i', $type1, $matches))
 		{
-			$result = 'int(10) unsigned';
+			$result = strtolower($matches['type']);
 		}
-		elseif (strtolower(substr($type2, 0, 8)) === 'unsigned')
+
+		if (strtolower(substr($type2, 0, 8)) === 'unsigned')
 		{
-			$result = $type1 . ' unsigned';
+			$result .= ' unsigned';
 		}
 
 		return $result;
@@ -281,7 +294,9 @@ class MysqlChangeItem extends ChangeItem
 	/**
 	 * Make check query for column changes/modifications tolerant
 	 * for automatic type changes of text columns, e.g. from TEXT
-	 * to MEDIUMTEXT, after comnversion from utf8 to utf8mb4
+	 * to MEDIUMTEXT, after conversion from utf8 to utf8mb4, and
+	 * fix integer columns without display length for MySQL 8
+	 * (see also function "fixInteger" above).
 	 *
 	 * @param   string  $type  The column type found in the update query
 	 *
@@ -293,28 +308,46 @@ class MysqlChangeItem extends ChangeItem
 	{
 		$uType = strtoupper(str_replace(';', '', $type));
 
-		if ($this->db->hasUTF8mb4Support())
+		switch ($uType)
 		{
-			if ($uType === 'TINYTEXT')
-			{
-				$typeCheck = 'UPPER(type) IN (' . $this->db->quote('TINYTEXT') . ',' . $this->db->quote('TEXT') . ')';
-			}
-			elseif ($uType === 'TEXT')
-			{
-				$typeCheck = 'UPPER(type) IN (' . $this->db->quote('TEXT') . ',' . $this->db->quote('MEDIUMTEXT') . ')';
-			}
-			elseif ($uType === 'MEDIUMTEXT')
-			{
-				$typeCheck = 'UPPER(type) IN (' . $this->db->quote('MEDIUMTEXT') . ',' . $this->db->quote('LONGTEXT') . ')';
-			}
-			else
-			{
+			case 'BIGINT UNSIGNED':
+			case 'INT UNSIGNED':
+			case 'MEDIUMINT UNSIGNED':
+			case 'SMALLINT UNSIGNED':
+			case 'TINYINT UNSIGNED':
+				// Eg for "INT": "UPPER(type) REGEXP '^INT([(][0-9]+[)])? UNSIGNED$'"
+				$typeCheck = 'UPPER(type) REGEXP ' . $this->db->quote('^' . str_replace(' ', '([(][0-9]+[)])? ', $uType) . '$');
+				break;
+
+			case 'BIGINT':
+			case 'INT':
+			case 'MEDIUMINT':
+			case 'SMALLINT':
+			case 'TINYINT':
+				// Eg for "INT": "UPPER(type) REGEXP '^INT([(][0-9]+[)])?$'"
+				$typeCheck = 'UPPER(type) REGEXP ' . $this->db->quote('^' . $uType . '([(][0-9]+[)])?$');
+				break;
+
+			case 'MEDIUMTEXT':
+				$typeCheck = $this->db->hasUTF8mb4Support()
+					? 'UPPER(type) IN (' . $this->db->quote('MEDIUMTEXT') . ',' . $this->db->quote('LONGTEXT') . ')'
+					: 'UPPER(type) = ' . $this->db->quote('MEDIUMTEXT');
+				break;
+
+			case 'TEXT':
+				$typeCheck = $this->db->hasUTF8mb4Support()
+					? 'UPPER(type) IN (' . $this->db->quote('TEXT') . ',' . $this->db->quote('MEDIUMTEXT') . ')'
+					: 'UPPER(type) = ' . $this->db->quote('TEXT');
+				break;
+
+			case 'TINYTEXT':
+				$typeCheck = $this->db->hasUTF8mb4Support()
+					? 'UPPER(type) IN (' . $this->db->quote('TINYTEXT') . ',' . $this->db->quote('TEXT') . ')'
+					: 'UPPER(type) = ' . $this->db->quote('TINYTEXT');
+				break;
+
+			default:
 				$typeCheck = 'UPPER(type) = ' . $this->db->quote($uType);
-			}
-		}
-		else
-		{
-			$typeCheck = 'UPPER(type) = ' . $this->db->quote($uType);
 		}
 
 		return $typeCheck;
@@ -364,6 +397,7 @@ class MysqlChangeItem extends ChangeItem
 	{
 		// Skip types that do not support default values
 		$type = strtolower($type);
+
 		if (substr($type, -4) === 'text' || substr($type, -4) === 'blob')
 		{
 			return false;
@@ -371,7 +405,7 @@ class MysqlChangeItem extends ChangeItem
 
 		// Find DEFAULT keyword
 		$index = array_search('default', array_map('strtolower', $changesArray));
-	
+
 		// Create the check
 		if ($index !== false)
 		{

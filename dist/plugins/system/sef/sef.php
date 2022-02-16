@@ -3,23 +3,26 @@
  * @package     Joomla.Plugin
  * @subpackage  System.sef
  *
- * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
+ * @copyright   (C) 2007 Open Source Matters, Inc. <https://www.joomla.org>
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
+
+use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\Router\Route;
+use Joomla\CMS\Uri\Uri;
 
 /**
  * Joomla! SEF Plugin.
  *
  * @since  1.5
  */
-class PlgSystemSef extends JPlugin
+class PlgSystemSef extends CMSPlugin
 {
 	/**
-	 * Application object.
+	 * @var    \Joomla\CMS\Application\CMSApplication
 	 *
-	 * @var    JApplicationCms
 	 * @since  3.5
 	 */
 	protected $app;
@@ -67,12 +70,12 @@ class PlgSystemSef extends JPlugin
 			unset($doc->_links[$canonical]);
 
 			// Set the current canonical link but use the SEF system plugin domain field.
-			$canonical = $sefDomain . JUri::getInstance($canonical)->toString(array('path', 'query', 'fragment'));
+			$canonical = $sefDomain . Uri::getInstance($canonical)->toString(array('path', 'query', 'fragment'));
 		}
 		// If a canonical html doesn't exists already add a canonical html tag using the SEF plugin domain field.
 		else
 		{
-			$canonical = $sefDomain . JUri::getInstance()->toString(array('path', 'query', 'fragment'));
+			$canonical = $sefDomain . Uri::getInstance()->toString(array('path', 'query', 'fragment'));
 		}
 
 		// Add the canonical link.
@@ -92,11 +95,11 @@ class PlgSystemSef extends JPlugin
 		}
 
 		// Replace src links.
-		$base   = JUri::base(true) . '/';
+		$base   = Uri::base(true) . '/';
 		$buffer = $this->app->getBody();
 
 		// For feeds we need to search for the URL with domain.
-		$prefix = $this->app->getDocument()->getType() === 'feed' ? JUri::root() : '';
+		$prefix = $this->app->getDocument()->getType() === 'feed' ? Uri::root() : '';
 
 		// Replace index.php URI by SEF URI.
 		if (strpos($buffer, 'href="' . $prefix . 'index.php?') !== false)
@@ -107,7 +110,7 @@ class PlgSystemSef extends JPlugin
 			{
 				$buffer = str_replace(
 					'href="' . $prefix . 'index.php?' . $urlQueryString . '"',
-					'href="' . trim($prefix, '/') . JRoute::_('index.php?' . $urlQueryString) . '"',
+					'href="' . trim($prefix, '/') . Route::_('index.php?' . $urlQueryString) . '"',
 					$buffer
 				);
 			}
@@ -115,7 +118,7 @@ class PlgSystemSef extends JPlugin
 			$this->checkBuffer($buffer);
 		}
 
-		// Check for all unknown protocals (a protocol must contain at least one alpahnumeric character followed by a ":").
+		// Check for all unknown protocols (a protocol must contain at least one alphanumeric character followed by a ":").
 		$protocols  = '[a-zA-Z0-9\-]+:';
 		$attributes = array('href=', 'src=', 'poster=');
 
@@ -152,7 +155,7 @@ class PlgSystemSef extends JPlugin
 			$this->checkBuffer($buffer);
 		}
 
-		// Replace all unknown protocals in javascript window open events.
+		// Replace all unknown protocols in javascript window open events.
 		if (strpos($buffer, 'window.open(') !== false)
 		{
 			$regex  = '#onclick="window.open\(\'(?!/|' . $protocols . '|\#)([^/]+[^\']*?\')#m';
@@ -236,25 +239,5 @@ class PlgSystemSef extends JPlugin
 
 			throw new RuntimeException($message);
 		}
-	}
-
-	/**
-	 * Replace the matched tags.
-	 *
-	 * @param   array  &$matches  An array of matches (see preg_match_all).
-	 *
-	 * @return  string
-	 *
-	 * @deprecated  4.0  No replacement.
-	 */
-	protected static function route(&$matches)
-	{
-		JLog::add(__METHOD__ . ' is deprecated, no replacement.', JLog::WARNING, 'deprecated');
-
-		$url   = $matches[1];
-		$url   = str_replace('&amp;', '&', $url);
-		$route = JRoute::_('index.php?' . $url);
-
-		return 'href="' . $route;
 	}
 }

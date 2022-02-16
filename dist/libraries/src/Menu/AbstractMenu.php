@@ -2,55 +2,58 @@
 /**
  * Joomla! Content Management System
  *
- * @copyright  Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
+ * @copyright  (C) 2006 Open Source Matters, Inc. <https://www.joomla.org>
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 namespace Joomla\CMS\Menu;
 
-defined('JPATH_PLATFORM') or die;
+\defined('JPATH_PLATFORM') or die;
 
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\User\User;
 use Joomla\Registry\Registry;
 
 /**
  * Menu class
  *
  * @since  1.5
- * @note   Will become abstract in Joomla 4
  */
-class AbstractMenu
+abstract class AbstractMenu
 {
 	/**
 	 * Array to hold the menu items
 	 *
 	 * @var    MenuItem[]
-	 * @since  1.5
-	 * @deprecated  4.0  Will convert to $items
+	 *
+	 * @since  4.0.0
 	 */
-	protected $_items = array();
+	protected $items = array();
 
 	/**
-	 * Identifier of the default menu item
+	 * Identifier of the default menu item. Key of the array is the language.
 	 *
-	 * @var    integer
-	 * @since  1.5
-	 * @deprecated  4.0  Will convert to $default
+	 * @var    integer[]
+	 *
+	 * @since  4.0.0
 	 */
-	protected $_default = array();
+	protected $default = array();
 
 	/**
 	 * Identifier of the active menu item
 	 *
 	 * @var    integer
-	 * @since  1.5
-	 * @deprecated  4.0  Will convert to $active
+	 *
+	 * @since  4.0.0
 	 */
-	protected $_active = 0;
+	protected $active = 0;
 
 	/**
 	 * Menu instances container.
 	 *
 	 * @var    AbstractMenu[]
+	 *
 	 * @since  1.7
 	 */
 	protected static $instances = array();
@@ -58,10 +61,20 @@ class AbstractMenu
 	/**
 	 * User object to check access levels for
 	 *
-	 * @var    \JUser
-	 * @since  3.5
+	 * @var    User
+	 *
+	 * @since  3.9.26
 	 */
-	protected $user;
+	protected $storedUser;
+
+	/**
+	 * Flag for checking if the menu items have been loaded
+	 *
+	 * @var    boolean
+	 *
+	 * @since  4.0.0
+	 */
+	private $itemsLoaded = false;
 
 	/**
 	 * Class constructor
@@ -72,18 +85,17 @@ class AbstractMenu
 	 */
 	public function __construct($options = array())
 	{
-		// Load the menu items
-		$this->load();
-
-		foreach ($this->_items as $item)
-		{
-			if ($item->home)
-			{
-				$this->_default[trim($item->language)] = $item->id;
-			}
-		}
-
-		$this->user = isset($options['user']) && $options['user'] instanceof \JUser ? $options['user'] : \JFactory::getUser();
+		/**
+		 * It is preferred NOT to inject and store the user when constructing the menu object,
+		 * at least for the Menu object used by Joomla.
+		 * The menu object can be built very early in the request, from an onAfterInitialise event
+		 * but the user can be updated later (by the Remember me plugin for instance). As the stored
+		 * user object is not updated, the menu will render incorrectly, not complying with
+		 * menu items access levels.
+		 *
+		 * @see https://github.com/joomla/joomla-cms/issues/11541
+		 */
+		$this->storedUser = isset($options['user']) && $options['user'] instanceof User ? $options['user'] : null;
 	}
 
 	/**
@@ -94,44 +106,39 @@ class AbstractMenu
 	 *
 	 * @return  AbstractMenu  A menu object.
 	 *
-	 * @since   1.5
-	 * @throws  \Exception
+	 * @since       1.5
+	 *
+	 * @throws      \Exception
+	 *
+	 * @deprecated  5.0 Use the MenuFactoryInterface from the container instead
 	 */
 	public static function getInstance($client, $options = array())
 	{
+		if (!$client)
+		{
+			throw new \Exception(Text::sprintf('JLIB_APPLICATION_ERROR_MENU_LOAD', $client), 500);
+		}
+
 		if (empty(self::$instances[$client]))
 		{
-			// Create a Menu object
-			$classname = 'JMenu' . ucfirst($client);
-
-			if (!class_exists($classname))
-			{
-				// @deprecated 4.0 Everything in this block is deprecated but the warning is only logged after the file_exists
-				// Load the menu object
-				$info = \JApplicationHelper::getClientInfo($client, true);
-
-				if (is_object($info))
-				{
-					$path = $info->path . '/includes/menu.php';
-
-					\JLoader::register($classname, $path);
-
-					if (class_exists($classname))
-					{
-						\JLog::add('Non-autoloadable Menu subclasses are deprecated, support will be removed in 4.0.', \JLog::WARNING, 'deprecated');
-					}
-				}
-			}
-
-			if (!class_exists($classname))
-			{
-				throw new \Exception(\JText::sprintf('JLIB_APPLICATION_ERROR_MENU_LOAD', $client), 500);
-			}
-
-			self::$instances[$client] = new $classname($options);
+			self::$instances[$client] = Factory::getContainer()->get(MenuFactoryInterface::class)->createMenu($client, $options);
 		}
 
 		return self::$instances[$client];
+	}
+
+	/**
+	 * Setter for the current user used to build menu.
+	 *
+	 * @param   User  $user  The new user to set.
+	 *
+	 * @return  void
+	 *
+	 * @since 3.9.26
+	 */
+	public function setUser($user)
+	{
+		$this->storedUser = $user;
 	}
 
 	/**
@@ -147,9 +154,9 @@ class AbstractMenu
 	{
 		$result = null;
 
-		if (isset($this->_items[$id]))
+		if (isset($this->getMenu()[$id]))
 		{
-			$result = &$this->_items[$id];
+			$result = &$this->getMenu()[$id];
 		}
 
 		return $result;
@@ -167,9 +174,9 @@ class AbstractMenu
 	 */
 	public function setDefault($id, $language = '*')
 	{
-		if (isset($this->_items[$id]))
+		if (isset($this->getMenu()[$id]))
 		{
-			$this->_default[$language] = $id;
+			$this->default[$language] = $id;
 
 			return true;
 		}
@@ -182,23 +189,24 @@ class AbstractMenu
 	 *
 	 * @param   string  $language  The language code, default value of * means all.
 	 *
-	 * @return  MenuItem|null  The item object or null when not found for given language
+	 * @return  MenuItem|void  The item object or null when not found for given language
 	 *
 	 * @since   1.5
 	 */
 	public function getDefault($language = '*')
 	{
-		if (array_key_exists($language, $this->_default))
+		// Get menu items first to ensure defaults have been populated
+		$items = $this->getMenu();
+
+		if (\array_key_exists($language, $this->default))
 		{
-			return $this->_items[$this->_default[$language]];
+			return $items[$this->default[$language]];
 		}
 
-		if (array_key_exists('*', $this->_default))
+		if (\array_key_exists('*', $this->default))
 		{
-			return $this->_items[$this->_default['*']];
+			return $items[$this->default['*']];
 		}
-
-		return;
 	}
 
 	/**
@@ -206,37 +214,33 @@ class AbstractMenu
 	 *
 	 * @param   integer  $id  The item id
 	 *
-	 * @return  MenuItem|null  The menu item representing the given ID if present or null otherwise
+	 * @return  MenuItem|void  The menu item representing the given ID if present or null otherwise
 	 *
 	 * @since   1.5
 	 */
 	public function setActive($id)
 	{
-		if (isset($this->_items[$id]))
+		if (isset($this->getMenu()[$id]))
 		{
-			$this->_active = $id;
+			$this->active = $id;
 
-			return $this->_items[$id];
+			return $this->getMenu()[$id];
 		}
-
-		return;
 	}
 
 	/**
 	 * Get menu item by id.
 	 *
-	 * @return  MenuItem|null  The item object if an active menu item has been set or null
+	 * @return  MenuItem|void  The item object if an active menu item has been set or null
 	 *
 	 * @since   1.5
 	 */
 	public function getActive()
 	{
-		if ($this->_active)
+		if ($this->active)
 		{
-			return $this->_items[$this->_active];
+			return $this->getMenu()[$this->active];
 		}
-
-		return;
 	}
 
 	/**
@@ -253,14 +257,14 @@ class AbstractMenu
 	 */
 	public function getItems($attributes, $values, $firstonly = false)
 	{
-		$items = array();
+		$items      = array();
 		$attributes = (array) $attributes;
-		$values = (array) $values;
-		$count = count($attributes);
+		$values     = (array) $values;
+		$count      = \count($attributes);
 
-		foreach ($this->_items as $item)
+		foreach ($this->getMenu() as $item)
 		{
-			if (!is_object($item))
+			if (!\is_object($item))
 			{
 				continue;
 			}
@@ -269,9 +273,9 @@ class AbstractMenu
 
 			for ($i = 0; $i < $count; $i++)
 			{
-				if (is_array($values[$i]))
+				if (\is_array($values[$i]))
 				{
-					if (!in_array($item->{$attributes[$i]}, $values[$i]))
+					if (!\in_array($item->{$attributes[$i]}, $values[$i]))
 					{
 						$test = false;
 						break;
@@ -314,7 +318,7 @@ class AbstractMenu
 	{
 		if ($menu = $this->getItem($id))
 		{
-			return $menu->params;
+			return $menu->getParams();
 		}
 
 		return new Registry;
@@ -329,7 +333,22 @@ class AbstractMenu
 	 */
 	public function getMenu()
 	{
-		return $this->_items;
+		if (!$this->itemsLoaded)
+		{
+			$this->load();
+
+			foreach ($this->items as $item)
+			{
+				if ($item->home)
+				{
+					$this->default[trim($item->language)] = $item->id;
+				}
+			}
+
+			$this->itemsLoaded = true;
+		}
+
+		return $this->items;
 	}
 
 	/**
@@ -347,7 +366,15 @@ class AbstractMenu
 
 		if ($menu)
 		{
-			return in_array((int) $menu->access, $this->user->getAuthorisedViewLevels());
+			$access = (int) $menu->access;
+
+			// If the access level is public we don't need to load the user session
+			if ($access === 1)
+			{
+				return true;
+			}
+
+			return \in_array($access, $this->user->getAuthorisedViewLevels(), true);
 		}
 
 		return true;
@@ -360,8 +387,46 @@ class AbstractMenu
 	 *
 	 * @since   1.5
 	 */
-	public function load()
+	abstract public function load();
+
+	/**
+	 * Internal getter for the user. Returns the injected
+	 * one if any, or the current one if none.
+	 *
+	 * @return User
+	 *
+	 * @since 3.9.26
+	 */
+	protected function getUser()
 	{
-		return array();
+		return empty($this->storedUser)
+			? Factory::getUser()
+			: $this->storedUser;
+	}
+
+	/**
+	 * Magic getter for the user object. Returns the injected
+	 * one if any, or the current one if none.
+	 *
+	 * Using a magic getter to preserve B/C when we stopped storing the user object upon construction of the menu object.
+	 * As the user property is not initialized anymore, this getter ensures any class extending
+	 * this one can still use $instance->user and get a proper value.
+	 *
+	 * @param   string  $propName  Name of the missing or protected property.
+	 *
+	 * @return User|null
+	 *
+	 * @since 3.9.26
+	 */
+	public function __get($propName)
+	{
+		if ($propName === 'user')
+		{
+			return empty($this->storedUser)
+				? Factory::getUser()
+				: $this->storedUser;
+		}
+
+		return null;
 	}
 }

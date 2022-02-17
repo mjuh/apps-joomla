@@ -40,9 +40,15 @@ def unpack_joomla_to_workdir():
 
 
 def setup_joomla():
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox") # chrome crashes otherwise
+
+    d = webdriver.Chrome(options=options)
+    Wait = WebDriverWait(d, 60)
+
     try:
-        d = webdriver.PhantomJS()
-        Wait = WebDriverWait(d, 60)
+
 
         d.get(INSTALLER_URL)
         # main configuration page

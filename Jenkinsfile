@@ -8,17 +8,13 @@
         stages {
             stage('Build Docker image') {
                 steps {
-                    gitlabCommitStatus(STAGE_NAME) {
                         script { dockerImage = buildDocker namespace: GROUP_NAME, name: PROJECT_NAME, tag: BRANCH_NAME }
-                    }
                 }
             }
             stage('Push Docker image') {
                 when { not { expression { return params.skipToDeploy } } }
                 steps {
-                    gitlabCommitStatus(STAGE_NAME) {
                         pushDocker image: dockerImage
-                    }
                 }
                 post {
                     success {

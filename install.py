@@ -94,11 +94,11 @@ def setup_joomla():
 
         d.quit()
     except Exception as e:
-        if hasattr(e, "screen"):
+        if hasattr(e, "screen") and e.screen is not None:
             with open("error.png", "wb") as f:
                 f.write(base64.decodebytes(e.screen.encode()))
         else:
-            with open("error.html", "wb") as f:
+            with open("error.html", "w") as f:
                 f.write(d.page_source)
         raise
 

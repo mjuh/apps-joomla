@@ -43,18 +43,18 @@ def main():
 
         # main configuration page
         print("Submitting form")
-        WebDriverWait(d, 60).until(EC.elementToBeClickable(By.id("jform_site_name")))
+        WebDriverWait(d, 60).until(EC.element_to_be_clickable(By.ID("jform_site_name")))
         d.find_element_by_id("jform_site_name").send_keys(APP_TITLE)
         d.find_element_by_id("step1").click()
 
-        WebDriverWait(d, 60).until(EC.elementToBeClickable(By.id("jform_admin_user")))
+        WebDriverWait(d, 60).until(EC.element_to_be_clickable(By.ID("jform_admin_user")))
         d.find_element_by_id("jform_admin_user").send_keys(ADMIN_USERNAME)
         d.find_element_by_id("jform_admin_username").send_keys(ADMIN_USERNAME)
         d.find_element_by_id("jform_admin_password").send_keys(ADMIN_PASSWORD)
         d.find_element_by_id("jform_admin_email").send_keys(ADMIN_EMAIL)
         d.find_element_by_id("step2").click()
 
-        WebDriverWait(d, 60).until(EC.elementToBeClickable(By.id("jform_db_host")))
+        WebDriverWait(d, 60).until(EC.element_to_be_clickable(By.ID("jform_db_host")))
         db_host_field = d.find_element_by_id("jform_db_host")
         db_host_field.clear()   # Joomla installer sets 'localhost' here by default
         db_host_field.send_keys(DB_HOST)

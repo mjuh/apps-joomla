@@ -30,18 +30,21 @@ DB_NAME = os.environ["DB_NAME"]
 XPATHS = {"lang_table": "/html/body/div/div/div/div/main/div/div[3]/div/fieldset[2]/div/form/table/tbody", # really fragile test before update
           "finish": '/html/body/div/div/div/div/main/div/div[3]/div/div/div/div/button[1]'}
 
-def main():
+
+
+def unpack_joomla_to_workdir():
     print("Unpacking Joomla {}".format(VERSION))
     shutil.rmtree("installation", ignore_errors=True)
     if os.path.exists("configuration.php"): os.unlink("configuration.php")
     shutil.unpack_archive(ARCHIVE_PATH)
 
+
+def setup_joomla():
     try:
         d = webdriver.PhantomJS()
         Wait = WebDriverWait(d, 60)
 
         d.get(INSTALLER_URL)
-
         # main configuration page
         print("Submitting form")
         Wait.until(EC.element_to_be_clickable((By.ID, "jform_site_name")))
@@ -94,7 +97,17 @@ def main():
         if hasattr(e, "screen"):
             with open("error.png", "wb") as f:
                 f.write(base64.decodebytes(e.screen.encode()))
+        else:
+            with open("error.html", "wb") as f:
+                f.write(d.page_source)
         raise
+
+
+def main():
+    unpack_joomla_to_workdir()
+    setup_joomla()
+
+
 
 if __name__ == "__main__":
     main()

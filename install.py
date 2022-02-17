@@ -47,6 +47,7 @@ def setup_joomla():
         d.get(INSTALLER_URL)
         # main configuration page
         print("Submitting form")
+        d.save_screenshot("test.png")
         Wait.until(EC.element_to_be_clickable((By.ID, "jform_site_name")))
         d.find_element_by_id("jform_site_name").send_keys(APP_TITLE)
         d.find_element_by_id("step1").click()

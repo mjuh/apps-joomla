@@ -30,7 +30,6 @@ DB_NAME = os.environ["DB_NAME"]
 XPATHS = {"lang_table": "/html/body/div/div/div/div/main/div/div[3]/div/fieldset[2]/div/form/table/tbody", # really fragile test before update
           "finish": '/html/body/div/div/div/div/main/div/div[3]/div/div/div/div/button[1]'}
 
-
 def main():
     print("Unpacking Joomla {}".format(VERSION))
     shutil.rmtree("installation", ignore_errors=True)
@@ -39,22 +38,24 @@ def main():
 
     try:
         d = webdriver.PhantomJS()
+        Wait = WebDriverWait(d, 60)
+
         d.get(INSTALLER_URL)
 
         # main configuration page
         print("Submitting form")
-        WebDriverWait(d, 60).until(EC.element_to_be_clickable(By.ID("jform_site_name")))
+        Wait.until(EC.element_to_be_clickable((By.ID, "jform_site_name")))
         d.find_element_by_id("jform_site_name").send_keys(APP_TITLE)
         d.find_element_by_id("step1").click()
 
-        WebDriverWait(d, 60).until(EC.element_to_be_clickable(By.ID("jform_admin_user")))
+        Wait.until(EC.element_to_be_clickable((By.ID, "jform_admin_user")))
         d.find_element_by_id("jform_admin_user").send_keys(ADMIN_USERNAME)
         d.find_element_by_id("jform_admin_username").send_keys(ADMIN_USERNAME)
         d.find_element_by_id("jform_admin_password").send_keys(ADMIN_PASSWORD)
         d.find_element_by_id("jform_admin_email").send_keys(ADMIN_EMAIL)
         d.find_element_by_id("step2").click()
 
-        WebDriverWait(d, 60).until(EC.element_to_be_clickable(By.ID("jform_db_host")))
+        Wait.until(EC.element_to_be_clickable((By.ID, "jform_db_host")))
         db_host_field = d.find_element_by_id("jform_db_host")
         db_host_field.clear()   # Joomla installer sets 'localhost' here by default
         db_host_field.send_keys(DB_HOST)
@@ -67,21 +68,21 @@ def main():
 
         # page with installing additional lang
         print("Installing language pack by name: {}".format(APP_LANG_NAME))
-        WebDriverWait(d, 60).until(EC.visibility_of_element_located((By.ID, "installAddFeatures")))
+        Wait.until(EC.visibility_of_element_located((By.ID, "installAddFeatures")))
         d.find_element_by_id("installAddFeatures").click()
         # page with lang selection
-        WebDriverWait(d, 60).until(EC.visibility_of_element_located((By.XPATH, XPATHS["lang_table"])))
+        Wait.until(EC.visibility_of_element_located((By.XPATH, XPATHS["lang_table"])))
         checkbox_id = next((e.get_attribute("for") for e in d.find_elements_by_tag_name("label")
                             if APP_LANG_NAME in e.text
                             ))
         d.find_element_by_id(checkbox_id).click()
         d.find_element_by_id("installLanguagesButton").click()
 
-        # page with defalt lang
-        WebDriverWait(d, 60).until(EC.visibility_of_element_located((By.ID, "defaultlanguage")))
+        # page with default lang
+        Wait.until(EC.visibility_of_element_located((By.ID, "defaultlanguage")))
         lang_id = next((e.get_attribute("for") for e in d.find_elements_by_tag_name("label")
                             if APP_LANG_NAME in e.text
-                        ))[-1] # if think that we have only Russian and English then one last symbol for identification is more then enough
+                        ))[-1] # if think that we have only Russian and English, then one last symbol for identification is more then enough
         d.find_element_by_id("admin-language-cb" + lang_id).click()
         d.find_element_by_id("site-language-cb" + lang_id).click()
         d.find_element_by_id("defaultLanguagesButton").click()

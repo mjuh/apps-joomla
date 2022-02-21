@@ -19,6 +19,7 @@ let
       export TABLE_PREFIX=$(echo $ADMIN_PASSWORD | sha256sum | head --bytes=3 )
       export ADMIN_PASSWORD_HASH=$(echo $ADMIN_PASSWORD | openssl passwd -5 -stdin)
       export INSTALL_DATETIME=$(date +"%Y-%m-%d %H:%M:%S")
+      export JOOMLA_SECRET=$(cat /dev/urandom | tr -dc "a-zA-Z0-9" | fold -w 16 | head -n 1)
 
       echo "Extract installer archive."
       tar -xf ${joomla}
@@ -35,7 +36,7 @@ let
       envsubst < ${./sql/USER_CREATE.sql} | mysql -h$DB_HOST -u$DB_USER -p$DB_PASSWORD $DB_NAME
 
       echo "Install config"
-      envsubst '$DOCUMENT_ROOT $APP_TITLE $DB_HOST $DB_USER $DB_PASSWORD $DB_NAME $APP_TITLE $TABLE_PREFIX $ADMIN_EMAIL' \
+      envsubst '$DOCUMENT_ROOT $APP_TITLE $DB_HOST $DB_USER $DB_PASSWORD $DB_NAME $APP_TITLE $TABLE_PREFIX $ADMIN_EMAIL $JOOMLA_SECRET' \
         < ${./configs/configuration.php} > configuration.php
 
       mv htaccess.txt .htaccess

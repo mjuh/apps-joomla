@@ -40,6 +40,11 @@
         joomla_version = "4.0.3";
       };
 
+      joomla-4-1 = import ./container.nix {
+        inherit nixpkgs system;
+        joomla_version = "4.1.0";
+      };
+
       deploy-3-9 = majordomo.outputs.deploy {
         tag = "apps/joomla";
         pkg_name = "joomla-3-9";
@@ -57,9 +62,15 @@
         pkg_name = "joomla-4-0";
         postfix = "_4_0";
       };
+
+      deploy-4-1 = majordomo.outputs.deploy {
+        tag = "apps/joomla";
+        pkg_name = "joomla-4-1";
+        postfix = "_4_1";
+      };
     };
 
-    defaultPackage.${system} = self.packages.${system}.joomla-4-0;
+    defaultPackage.${system} = self.packages.${system}.joomla-4-1;
   };
 }
 

@@ -6,48 +6,51 @@ let
 
   entrypoint = (stdenv.mkDerivation rec {
     name = "joomla-install";
-    builder = writeScript "builder.sh" (''
-      source $stdenv/setup
-      mkdir -p $out/bin
+    builder = writeScript "builder.sh" (
+      ''
+        source $stdenv/setup
+        mkdir -p $out/bin
 
-      cat > $out/bin/${name}.sh <<'EOF'
-      #!${bash}/bin/bash
-      set -ex
-      export PATH=${gnutar}/bin:${coreutils}/bin:${gzip}/bin:${mariadb.client}/bin:${gnused}/bin:${gettext}/bin:${openssl}/bin
+        cat > $out/bin/${name}.sh <<'EOF'
+        #!${bash}/bin/bash
+        set -ex
+        export PATH=${gnutar}/bin:${coreutils}/bin:${gzip}/bin:${mariadb.client}/bin:${gnused}/bin:${gettext}/bin:${openssl}/bin
       
-      export MYSQL_PWD=$DB_PASSWORD
-      export TABLE_PREFIX=$(echo $ADMIN_PASSWORD | sha256sum | head --bytes=3 )
-      export ADMIN_PASSWORD_HASH=$(echo $ADMIN_PASSWORD | openssl passwd -5 -stdin)
-      export INSTALL_DATETIME=$(date +"%Y-%m-%d %H:%M:%S")
-      export JOOMLA_SECRET=$(cat /dev/urandom | tr -dc "a-zA-Z0-9" | fold -w 16 | head -n 1)
+        export MYSQL_PWD=$DB_PASSWORD
+        export TABLE_PREFIX=$(echo $ADMIN_PASSWORD | sha256sum | head --bytes=3 )
+        export ADMIN_PASSWORD_HASH=$(echo $ADMIN_PASSWORD | openssl passwd -5 -stdin)
+        export INSTALL_DATETIME=$(date +"%Y-%m-%d %H:%M:%S")
+        export JOOMLA_SECRET=$(cat /dev/urandom | tr -dc "a-zA-Z0-9" | fold -w 16 | head -n 1)
 
-      echo "Extract installer archive."
-      tar -xf ${joomla}
+        echo "Extract installer archive."
+        tar -xf ${joomla}
 
-      echo "Prepare SQL dumps for import"
-      sed -i "s@#_@$TABLE_PREFIX@g" installation/sql/mysql/base.sql installation/sql/mysql/extensions.sql installation/sql/mysql/supports.sql
+        echo "Prepare SQL dumps for import"
+        sed -i "s@#_@$TABLE_PREFIX@g" installation/sql/mysql/base.sql installation/sql/mysql/extensions.sql installation/sql/mysql/supports.sql
 
-      echo "Import prepared SQL dumps"
-      mysql -h$DB_HOST -u$DB_USER -p$DB_PASSWORD $DB_NAME < installation/sql/mysql/base.sql
-      mysql -h$DB_HOST -u$DB_USER -p$DB_PASSWORD $DB_NAME < installation/sql/mysql/extensions.sql
-      mysql -h$DB_HOST -u$DB_USER -p$DB_PASSWORD $DB_NAME < installation/sql/mysql/supports.sql
+        echo "Import prepared SQL dumps"
+        mysql -h$DB_HOST -u$DB_USER -p$DB_PASSWORD $DB_NAME < installation/sql/mysql/base.sql
+        mysql -h$DB_HOST -u$DB_USER -p$DB_PASSWORD $DB_NAME < installation/sql/mysql/extensions.sql
+        mysql -h$DB_HOST -u$DB_USER -p$DB_PASSWORD $DB_NAME < installation/sql/mysql/supports.sql
 
-      echo "Create user"
-      envsubst < ${./sql/USER_CREATE.sql} | mysql -h$DB_HOST -u$DB_USER -p$DB_PASSWORD $DB_NAME
+        echo "Create user"
+        envsubst < ${./sql/USER_CREATE.sql} | mysql -h$DB_HOST -u$DB_USER -p$DB_PASSWORD $DB_NAME
 
-      echo "Install config"
-      envsubst '$DOCUMENT_ROOT $APP_TITLE $DB_HOST $DB_USER $DB_PASSWORD $DB_NAME $APP_TITLE $TABLE_PREFIX $ADMIN_EMAIL $JOOMLA_SECRET' \
-        < ${./configs/configuration.php} > configuration.php
+        echo "Install config"
+        envsubst '$DOCUMENT_ROOT $APP_TITLE $DB_HOST $DB_USER $DB_PASSWORD $DB_NAME $APP_TITLE $TABLE_PREFIX $ADMIN_EMAIL $JOOMLA_SECRET' \
+          < ${./configs/configuration.php} > configuration.php
 
-      mv htaccess.txt .htaccess
-      rm -rf installation
-      EOF
+        mv htaccess.txt .htaccess
+        rm -rf installation
+        EOF
 
-      chmod 555 $out/bin/${name}.sh
-    '');
+        chmod 555 $out/bin/${name}.sh
+      ''
+    );
   });
 
-in pkgs.dockerTools.buildLayeredImage rec {
+in
+pkgs.dockerTools.buildLayeredImage rec {
   name = "docker-registry.intr/apps/joomla";
 
   contents = [ bashInteractive coreutils gnutar gzip entrypoint mariadb.client ];

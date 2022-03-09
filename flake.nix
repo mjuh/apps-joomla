@@ -45,16 +45,16 @@
             container = import ./container.nix {
                 inherit nixpkgs system;
             };
+
+            deploy = majordomo.outputs.deploy {
+                tag = "apps/joomla";
+            };
         } // (tests { driver = true; }) ;
         checks.${system} = tests { };
         apps.${system}.vm = {
             type = "app";
             program = "${self.packages.${system}.joomla-vm-test-run-Joomla-mariadb-nix-upstream}/bin/nixos-run-vms";
         };
-        deploy = majordomo.outputs.deploy {
-            tag = "apps/joomla";
-        };
-
 
         defaultPackage.${system} = self.packages.${system}.container;
     };

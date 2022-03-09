@@ -1,76 +1,62 @@
 {
   description = "Docker container with Joomla installer";
   inputs = {
-    nixpkgs-unstable.url = "nixpkgs/nixpkgs-unstable";
-    majordomo.url = "git+https://gitlab.intr/_ci/nixpkgs?ref=deploy_postfix";
+    majordomo.url = "git+https://gitlab.intr/_ci/nixpkgs";
     flake-compat = {
       url = "github:edolstra/flake-compat";
       flake = false;
     };
+    containerImageApache.url = "git+https://gitlab.intr/webservices/apache2-php73.git";
   };
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, majordomo, ... } @ inputs: 
+  outputs = { self, nixpkgs, majordomo, ... } @ inputs:
   let
     system = "x86_64-linux";
+    tests = { driver ? false }: with nixpkgs.legacyPackages.${system}; { } // (with nixpkgs.legacyPackages.${system}.lib;
+      listToAttrs (map
+        (test: nameValuePair "joomla-${test.name}" (if driver then test.driver else test))
+
+        (import ./tests.nix {
+            inherit (majordomo.outputs) nixpkgs;
+            inherit (import majordomo.inputs.nixpkgs {
+              inherit system;
+              overlays = [ majordomo.overlay ];
+            }) maketestCms;
+            containerImageCMS = self.packages.${system}.container;
+            containerImageApache = inputs.containerImageApache.packages.${system}.container-master;
+          }
+        )
+      )
+    );
   in {
-    devShell.${system} = with nixpkgs-unstable.legacyPackages.${system}; mkShell {
-      buildInputs = [ nixUnstable ];
-      shellHook = ''
-        # Fix ssh completion
-        # bash: warning: setlocale: LC_CTYPE: cannot change locale (en_US.UTF-8)
-        export LANG=C
+        devShell.${system} = with nixpkgs.legacyPackages.${system}; mkShell {
+            buildInputs = [ nixFlakes ];
+            shellHook = ''
+                # Fix ssh completion
+                # bash: warning: setlocale: LC_CTYPE: cannot change locale (en_US.UTF-8)
+                export LANG=C
 
-        . ${nixUnstable}/share/bash-completion/completions/nix
-      '';
+                . ${nixFlakes}/share/bash-completion/completions/nix
+            '';
+        };
+
+
+        packages.${system} = {
+            container = import ./container.nix {
+                inherit nixpkgs system;
+            };
+        } // (tests { driver = true; }) ;
+        checks.${system} = tests { };
+        apps.${system}.vm = {
+            type = "app";
+            program = "${self.packages.${system}.joomla-vm-test-run-Joomla-mariadb-nix-upstream}/bin/nixos-run-vms";
+        };
+        deploy = majordomo.outputs.deploy {
+            tag = "apps/joomla";
+        };
+
+
+        defaultPackage.${system} = self.packages.${system}.container;
     };
-
-    packages.${system} = {
-      joomla-3-9 = import ./container.nix {
-        inherit nixpkgs system;
-        joomla_version = "3.9.28";
-      };
-
-      joomla-3-10 = import ./container.nix {
-        inherit nixpkgs system;
-        joomla_version = "3.10.1";
-      };
-
-      joomla-4-0 = import ./container.nix {
-        inherit nixpkgs system;
-        joomla_version = "4.0.3";
-      };
-
-      joomla-4-1 = import ./container.nix {
-        inherit nixpkgs system;
-        joomla_version = "4.1.0";
-      };
-
-      deploy-3-9 = majordomo.outputs.deploy {
-        tag = "apps/joomla";
-        pkg_name = "joomla-3-9";
-        postfix = "_3_9";
-      };
-
-      deploy-3-10 = majordomo.outputs.deploy {
-        tag = "apps/joomla";
-        pkg_name = "joomla-3-10";
-        postfix = "_3_10";
-      };
-
-      deploy-4-0 = majordomo.outputs.deploy {
-        tag = "apps/joomla";
-        pkg_name = "joomla-4-0";
-        postfix = "_4_0";
-      };
-
-      deploy-4-1 = majordomo.outputs.deploy {
-        tag = "apps/joomla";
-        pkg_name = "joomla-4-1";
-        postfix = "_4_1";
-      };
-    };
-
-    defaultPackage.${system} = self.packages.${system}.joomla-4-1;
-  };
 }
 

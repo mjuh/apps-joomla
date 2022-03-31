@@ -6,7 +6,7 @@ stdenv.mkDerivation rec {
 
   src = fetchurl {
     url = "https://downloads.joomla.org/cms/joomla${lib.versions.major version}/${builtins.replaceStrings [ "." ] [ "-" ] version}/Joomla_${builtins.replaceStrings [ "." ] [ "-" ] version}-Stable-Full_Package.tar.gz";
-    sha256 = "106nj4brip531viv9v802zpqka4cz2zfpnmajbm48iz1180mzlgf";
+    sha256 = "sha256-cGTs/vHo/3v8uslZvugQFyb8zuVHJkq3VfhV+17BybI=s";
   };
 
   sourceRoot = ".";

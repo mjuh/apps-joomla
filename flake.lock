@@ -173,15 +173,16 @@
         "nixpkgs-unstable": "nixpkgs-unstable_2"
       },
       "locked": {
-        "lastModified": 1648565985,
-        "narHash": "sha256-tXYU3XDSNtVXnXthCifsRFBrwx10vk72G04GbXbaDo8=",
-        "ref": "master",
-        "rev": "a9d15d12b1011e5939887f54518fc6c1a2987003",
-        "revCount": 917,
+        "lastModified": 1648749413,
+        "narHash": "sha256-S1fA10CZL8Jm4SmQSFtAV/tlfZkEiJdTCrarTyQ9o2I=",
+        "ref": "mjperl5Packages_discard_store_path",
+        "rev": "27655b8828b812f5800d2b85243ac916a913c464",
+        "revCount": 919,
         "type": "git",
         "url": "https://gitlab.intr/_ci/nixpkgs"
       },
       "original": {
+        "ref": "mjperl5Packages_discard_store_path",
         "type": "git",
         "url": "https://gitlab.intr/_ci/nixpkgs"
       }

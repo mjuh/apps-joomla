@@ -9,15 +9,16 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1646837627,
-        "narHash": "sha256-P1YwS3gfWQU/syRGaqXnPeHJljlTeKHr0EGmNMtQecs=",
-        "ref": "master",
-        "rev": "b55ef16372b11df240e49c68a84b809f158f7653",
-        "revCount": 263,
+        "lastModified": 1648736202,
+        "narHash": "sha256-JWCSHN1gdTqa7EM8JBLKYQMvDoXT6q5aEiqFx7g0SC0=",
+        "ref": "workaround_store_pathes_for_fromJSON",
+        "rev": "843a2e63cd17d1cbcab599bd470119d791121105",
+        "revCount": 269,
         "type": "git",
         "url": "https://gitlab.intr/webservices/apache2-php73.git"
       },
       "original": {
+        "ref": "workaround_store_pathes_for_fromJSON",
         "type": "git",
         "url": "https://gitlab.intr/webservices/apache2-php73.git"
       }
@@ -148,15 +149,16 @@
         "nixpkgs-unstable": "nixpkgs-unstable"
       },
       "locked": {
-        "lastModified": 1646395619,
-        "narHash": "sha256-wCBS5MMPhsRfVWjSO4uDnGFn7GU4oUJtKER+kw/Ab5g=",
-        "ref": "master",
-        "rev": "f38a3842ce7a196ee2de9fcafc8f8a9a3d8f9cbb",
-        "revCount": 915,
+        "lastModified": 1648735575,
+        "narHash": "sha256-vHiatEHADlHQljryWm9wADYzoPoWShiN85CvKRQFwrU=",
+        "ref": "mjperl5Packages_discard_store_path",
+        "rev": "215db5f78d0530e7a23f3f80e918722825d745a2",
+        "revCount": 918,
         "type": "git",
         "url": "https://gitlab.intr/_ci/nixpkgs"
       },
       "original": {
+        "ref": "mjperl5Packages_discard_store_path",
         "type": "git",
         "url": "https://gitlab.intr/_ci/nixpkgs"
       }
@@ -171,11 +173,11 @@
         "nixpkgs-unstable": "nixpkgs-unstable_2"
       },
       "locked": {
-        "lastModified": 1646395619,
-        "narHash": "sha256-wCBS5MMPhsRfVWjSO4uDnGFn7GU4oUJtKER+kw/Ab5g=",
+        "lastModified": 1648565985,
+        "narHash": "sha256-tXYU3XDSNtVXnXthCifsRFBrwx10vk72G04GbXbaDo8=",
         "ref": "master",
-        "rev": "f38a3842ce7a196ee2de9fcafc8f8a9a3d8f9cbb",
-        "revCount": 915,
+        "rev": "a9d15d12b1011e5939887f54518fc6c1a2987003",
+        "revCount": 917,
         "type": "git",
         "url": "https://gitlab.intr/_ci/nixpkgs"
       },

@@ -6,7 +6,7 @@
       url = "github:edolstra/flake-compat";
       flake = false;
     };
-    containerImageApache.url = "git+https://gitlab.intr/webservices/apache2-php73.git";
+    containerImageApache.url = "git+https://gitlab.intr/webservices/apache2-php73.git?ref=workaround_store_pathes_for_fromJSON";
   };
 
   outputs = { self, nixpkgs, majordomo, ... } @ inputs:

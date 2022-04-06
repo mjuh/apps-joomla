@@ -17,10 +17,10 @@ let
         export PATH=${gnutar}/bin:${coreutils}/bin:${gzip}/bin:${mariadb.client}/bin:${gnused}/bin:${gettext}/bin:${openssl}/bin
       
         export MYSQL_PWD=$DB_PASSWORD
-        export TABLE_PREFIX=$(echo $ADMIN_PASSWORD | sha256sum | head --bytes=3 )
+        export TABLE_PREFIX=$(cat /dev/urandom | tr -dc "a-zA-Z0-9"| head --bytes=4)
         export ADMIN_PASSWORD_HASH=$(echo $ADMIN_PASSWORD | openssl passwd -5 -stdin)
         export INSTALL_DATETIME=$(date +"%Y-%m-%d %H:%M:%S")
-        export JOOMLA_SECRET=$(cat /dev/urandom | tr -dc "a-zA-Z0-9" | fold -w 16 | head -n 1)
+        export JOOMLA_SECRET=$(cat /dev/urandom | tr -dc "a-zA-Z0-9" | head --bytes=16)
 
         echo "Extract installer archive."
         tar -xf ${joomla}

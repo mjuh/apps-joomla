@@ -9,11 +9,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1648736202,
-        "narHash": "sha256-JWCSHN1gdTqa7EM8JBLKYQMvDoXT6q5aEiqFx7g0SC0=",
+        "lastModified": 1649250384,
+        "narHash": "sha256-6YKmSW4H7Z2VCDLugfWzPtKtrLy18X0cEs4qcfOC80c=",
         "ref": "workaround_store_pathes_for_fromJSON",
-        "rev": "843a2e63cd17d1cbcab599bd470119d791121105",
-        "revCount": 269,
+        "rev": "662d015e1e3ab14c8aafe10a4431baf026ad4e01",
+        "revCount": 270,
         "type": "git",
         "url": "https://gitlab.intr/webservices/apache2-php73.git"
       },
@@ -149,11 +149,11 @@
         "nixpkgs-unstable": "nixpkgs-unstable"
       },
       "locked": {
-        "lastModified": 1648735575,
-        "narHash": "sha256-vHiatEHADlHQljryWm9wADYzoPoWShiN85CvKRQFwrU=",
+        "lastModified": 1649250297,
+        "narHash": "sha256-oCQBMWeHO8iO9g2RPAngvXaqpPfcmv13RY6HoXlA68A=",
         "ref": "mjperl5Packages_discard_store_path",
-        "rev": "215db5f78d0530e7a23f3f80e918722825d745a2",
-        "revCount": 918,
+        "rev": "08d2a07581207745da7f4e82dbf3c4b5f5c96715",
+        "revCount": 920,
         "type": "git",
         "url": "https://gitlab.intr/_ci/nixpkgs"
       },
@@ -173,11 +173,11 @@
         "nixpkgs-unstable": "nixpkgs-unstable_2"
       },
       "locked": {
-        "lastModified": 1648749413,
-        "narHash": "sha256-S1fA10CZL8Jm4SmQSFtAV/tlfZkEiJdTCrarTyQ9o2I=",
+        "lastModified": 1649250297,
+        "narHash": "sha256-oCQBMWeHO8iO9g2RPAngvXaqpPfcmv13RY6HoXlA68A=",
         "ref": "mjperl5Packages_discard_store_path",
-        "rev": "27655b8828b812f5800d2b85243ac916a913c464",
-        "revCount": 919,
+        "rev": "08d2a07581207745da7f4e82dbf3c4b5f5c96715",
+        "revCount": 920,
         "type": "git",
         "url": "https://gitlab.intr/_ci/nixpkgs"
       },

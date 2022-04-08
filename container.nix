@@ -49,7 +49,7 @@ let
 
         echo "Install russian translation"
         unzip ${joomla-russian}
-        rm pkg_ru-RU.xml
+        mv pkg_ru-RU.xml administrator/manifests/packages/
 
         EOF
 

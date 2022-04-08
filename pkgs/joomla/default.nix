@@ -11,8 +11,10 @@ stdenv.mkDerivation rec {
 
   sourceRoot = ".";
 
+
+  unpackPhase = " ";
   installPhase = ''
-    cp -r $src $out 
+    cp -r $src $out
   '';
 }
 

@@ -3,6 +3,7 @@
 with import nixpkgs { inherit system; };
 let
   joomla = callPackage ./pkgs/joomla { };
+  joomla-russian = callPackage ./pkgs/joomla-russian { };
 
   entrypoint = (stdenv.mkDerivation rec {
     name = "joomla-install";
@@ -14,7 +15,7 @@ let
         cat > $out/bin/${name}.sh <<'EOF'
         #!${bash}/bin/bash
         set -ex
-        export PATH=${gnutar}/bin:${coreutils}/bin:${gzip}/bin:${mariadb.client}/bin:${gnused}/bin:${gettext}/bin:${openssl}/bin
+        export PATH=${gnutar}/bin:${coreutils}/bin:${gzip}/bin:${mariadb.client}/bin:${gnused}/bin:${gettext}/bin:${openssl}/bin:${unzip}/bin
       
         export MYSQL_PWD=$DB_PASSWORD
         export TABLE_PREFIX=$(cat /dev/urandom | tr -dc "a-zA-Z0-9"| head --bytes=4)
@@ -45,6 +46,11 @@ let
 
         rm web.config.txt
         rm -rf installation
+
+        echo "Install russian translation"
+        unzip ${joomla-russian}
+        rm pkg_ru-RU.xml
+
         EOF
 
         chmod 555 $out/bin/${name}.sh
@@ -56,7 +62,7 @@ in
 pkgs.dockerTools.buildLayeredImage rec {
   name = "docker-registry.intr/apps/joomla";
 
-  contents = [ bashInteractive coreutils gnutar gzip entrypoint mariadb.client ];
+  contents = [ bashInteractive coreutils gnutar unzip gzip entrypoint mariadb.client ];
   config = {
     Entrypoint = "${entrypoint}/bin/joomla-install.sh";
     Env = [

@@ -37,10 +37,13 @@ let
         envsubst < ${./sql/USER_CREATE.sql} | mysql -h$DB_HOST -u$DB_USER -p$DB_PASSWORD $DB_NAME
 
         echo "Install config"
-        envsubst '$DOCUMENT_ROOT $APP_TITLE $DB_HOST $DB_USER $DB_PASSWORD $DB_NAME $APP_TITLE $TABLE_PREFIX $ADMIN_EMAIL $JOOMLA_SECRET' \
+        envsubst '$DOCUMENT_ROOT $APP_TITLE $DB_HOST $DB_USER $DB_PASSWORD $DB_NAME $TABLE_PREFIX $ADMIN_EMAIL $JOOMLA_SECRET' \
           < ${./configs/configuration.php} > configuration.php
 
         mv htaccess.txt .htaccess
+        mv robots.txt.dist robots.txt
+
+        rm web.config.txt
         rm -rf installation
         EOF
 

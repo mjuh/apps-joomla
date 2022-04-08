@@ -6,7 +6,7 @@ class JConfig
 	public $offline_message = 'This site is down for maintenance.<br> Please check back again soon.';
 	public $display_offline_message = 1;
 	public $offline_image = '';
-	public $sitename = 'test_site_name';
+	public $sitename = '${APP_TITLE}';
 	public $editor = 'tinymce';
 	public $captcha = 0;
 	public $list_limit = 20;
@@ -29,7 +29,7 @@ class JConfig
 
 	/* Server Settings */
 	public $secret = '${JOOMLA_SECRET}';
-	public $gzip = false;
+	public $gzip = true;
 	public $error_reporting = 'default';
 	public $helpurl = 'https://help.joomla.org/proxy?keyref=Help{major}{minor}:{keyref}&lang={langcode}';
 	public $log_path = '${DOCUMENT_ROOT}/administrator/logs';
@@ -90,9 +90,9 @@ class JConfig
 	public $proxy_pass = '';
 
 	/* Debug Settings */
-	public $debug = true;
+	public $debug = false;
 	public $debug_lang = false;
-	public $debug_lang_const = true;
+	public $debug_lang_const = false;
 
 	/* Meta Settings */
 	public $MetaDesc = 'Joomla! - the dynamic portal engine and content management system';

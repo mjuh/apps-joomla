@@ -1,12 +1,12 @@
 {
   description = "Docker container with Joomla installer";
   inputs = {
-    majordomo.url = "git+https://gitlab.intr/_ci/nixpkgs?ref=mjperl5Packages_discard_store_path";
+    majordomo.url = "git+https://gitlab.intr/_ci/nixpkgs";
     flake-compat = {
       url = "github:edolstra/flake-compat";
       flake = false;
     };
-    containerImageApache.url = "git+https://gitlab.intr/webservices/apache2-php73.git?ref=workaround_store_pathes_for_fromJSON";
+    containerImageApache.url = "git+https://gitlab.intr/webservices/apache2-php73.git";
   };
 
   outputs = { self, nixpkgs, majordomo, ... } @ inputs:

@@ -9,16 +9,15 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1649251100,
-        "narHash": "sha256-/YSa9G0KTaRXWWFwqgenIBA4dBpBP87U+n/hAC8kvcc=",
-        "ref": "workaround_store_pathes_for_fromJSON",
-        "rev": "1b9d9f839ef4f0cf47d6013ce9d6741ffebe6e59",
-        "revCount": 270,
+        "lastModified": 1646837627,
+        "narHash": "sha256-P1YwS3gfWQU/syRGaqXnPeHJljlTeKHr0EGmNMtQecs=",
+        "ref": "master",
+        "rev": "b55ef16372b11df240e49c68a84b809f158f7653",
+        "revCount": 263,
         "type": "git",
         "url": "https://gitlab.intr/webservices/apache2-php73.git"
       },
       "original": {
-        "ref": "workaround_store_pathes_for_fromJSON",
         "type": "git",
         "url": "https://gitlab.intr/webservices/apache2-php73.git"
       }
@@ -149,16 +148,15 @@
         "nixpkgs-unstable": "nixpkgs-unstable"
       },
       "locked": {
-        "lastModified": 1648749413,
-        "narHash": "sha256-S1fA10CZL8Jm4SmQSFtAV/tlfZkEiJdTCrarTyQ9o2I=",
-        "ref": "mjperl5Packages_discard_store_path",
-        "rev": "27655b8828b812f5800d2b85243ac916a913c464",
-        "revCount": 919,
+        "lastModified": 1646395619,
+        "narHash": "sha256-wCBS5MMPhsRfVWjSO4uDnGFn7GU4oUJtKER+kw/Ab5g=",
+        "ref": "master",
+        "rev": "f38a3842ce7a196ee2de9fcafc8f8a9a3d8f9cbb",
+        "revCount": 915,
         "type": "git",
         "url": "https://gitlab.intr/_ci/nixpkgs"
       },
       "original": {
-        "ref": "mjperl5Packages_discard_store_path",
         "type": "git",
         "url": "https://gitlab.intr/_ci/nixpkgs"
       }
@@ -173,16 +171,15 @@
         "nixpkgs-unstable": "nixpkgs-unstable_2"
       },
       "locked": {
-        "lastModified": 1648749413,
-        "narHash": "sha256-S1fA10CZL8Jm4SmQSFtAV/tlfZkEiJdTCrarTyQ9o2I=",
-        "ref": "mjperl5Packages_discard_store_path",
-        "rev": "27655b8828b812f5800d2b85243ac916a913c464",
-        "revCount": 919,
+        "lastModified": 1649683793,
+        "narHash": "sha256-F4a35FuLgtiZYKHklzDYC+YYsOeYTuO27tjbLWR7GGs=",
+        "ref": "master",
+        "rev": "017fac6671e749c5697fe4f0fabeeaab76fb3371",
+        "revCount": 918,
         "type": "git",
         "url": "https://gitlab.intr/_ci/nixpkgs"
       },
       "original": {
-        "ref": "mjperl5Packages_discard_store_path",
         "type": "git",
         "url": "https://gitlab.intr/_ci/nixpkgs"
       }

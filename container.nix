@@ -17,7 +17,6 @@ let
         set -ex
         export PATH=${gnutar}/bin:${coreutils}/bin:${gzip}/bin:${mariadb.client}/bin:${gnused}/bin:${gettext}/bin:${openssl}/bin:${unzip}/bin
       
-        export MYSQL_PWD=$DB_PASSWORD
         export TABLE_PREFIX=$(cat /dev/urandom | tr -dc "a-zA-Z0-9"| head --bytes=4)
         export ADMIN_PASSWORD_HASH=$(echo $ADMIN_PASSWORD | openssl passwd -5 -stdin)
         export INSTALL_DATETIME=$(date +"%Y-%m-%d %H:%M:%S")
@@ -35,7 +34,8 @@ let
         mysql -h$DB_HOST -u$DB_USER -p$DB_PASSWORD $DB_NAME < installation/sql/mysql/supports.sql
 
         echo "Create user"
-        envsubst < ${./sql/USER_CREATE.sql} | mysql -h$DB_HOST -u$DB_USER -p$DB_PASSWORD $DB_NAME
+        envsubst '$TABLE_PREFIX $ADMIN_USERNAME $ADMIN_EMAIL $ADMIN_PASSWORD_HASH $INSTALL_DATETIME $INSTALL_DATETIME' \
+         < ${./sql/user_create.sql} | mysql -h$DB_HOST -u$DB_USER -p$DB_PASSWORD $DB_NAME
 
         echo "Install config"
         envsubst '$DOCUMENT_ROOT $APP_TITLE $DB_HOST $DB_USER $DB_PASSWORD $DB_NAME $TABLE_PREFIX $ADMIN_EMAIL $JOOMLA_SECRET' \
@@ -50,6 +50,9 @@ let
         echo "Install russian translation"
         unzip ${joomla-russian}
         mv pkg_ru-RU.xml administrator/manifests/packages/
+
+        echo "Import russian ext sql"
+        envsubst '$TABLE_PREFIX' < ${./sql/russian_ext_reg.sql} | mysql -h$DB_HOST -u$DB_USER -p$DB_PASSWORD $DB_NAME
 
         EOF
 
